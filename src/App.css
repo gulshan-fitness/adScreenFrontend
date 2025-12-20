@@ -1,0 +1,249 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.custom-phone-input input {
+  background-color: #000000 !important;
+ 
+}
+
+
+
+
+.custom-phone-input input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #17412d !important;
+}
+
+.custom-phone-input .react-tel-input .form-control {
+  background-color: #f6fffa !important;
+}
+
+.custom-phone-input input::placeholder {
+  color: #FFD700 !important; /* Change this color as needed */
+}
+
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+
+
+
+.matchstick-game {
+  font-family: 'Arial', sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #6e8efb, #a777e3);
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  color: white;
+  position: relative;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.game-board {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.equation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.equation-part {
+  margin: 0 5px;
+}
+
+.equation-space {
+  width: 20px;
+}
+
+.digit {
+  position: relative;
+  width: 60px;
+  height: 100px;
+  margin: 5px;
+}
+
+.segment {
+  position: absolute;
+  background-color: #ffa500;
+  border-radius: 3px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.segment:hover {
+  background-color: #ffcc00;
+}
+
+.segment.selected {
+  background-color: #ff0000;
+  box-shadow: 0 0 10px #ff0000;
+}
+
+.segment.horizontal {
+  height: 8px;
+  width: 50px;
+}
+
+.segment.vertical {
+  height: 40px;
+  width: 8px;
+}
+
+.segment.top {
+  top: 0;
+  left: 5px;
+}
+
+.segment.middle {
+  top: 46px;
+  left: 5px;
+}
+
+.segment.bottom {
+  top: 92px;
+  left: 5px;
+}
+
+.segment.top-left {
+  top: 5px;
+  left: 0;
+}
+
+.segment.top-right {
+  top: 5px;
+  right: 0;
+}
+
+.segment.bottom-left {
+  bottom: 5px;
+  left: 0;
+}
+
+.segment.bottom-right {
+  bottom: 5px;
+  right: 0;
+}
+
+.segment.off {
+  background-color: #333;
+  opacity: 0.3;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background: linear-gradient(to bottom, #4a6cfb, #2a4ccc);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.game-footer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.win-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  animation: pop-in 0.5s;
+}
+
+@keyframes pop-in {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .matchstick-game {
+    padding: 10px;
+  }
+  
+  .digit {
+    width: 40px;
+    height: 70px;
+  }
+  
+  .segment.horizontal {
+    width: 35px;
+  }
+  
+  .segment.horizontal.top,
+  .segment.horizontal.middle,
+  .segment.horizontal.bottom {
+    left: 2px;
+  }
+}
+
+
+
+
+
+
+/* .................................................................... */
+
+
+/* Stripe Elements Styles */
+.StripeElement {
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.StripeElement--focus {
+  border-color: #7c3aed;
+}
+
+.StripeElement--invalid {
+  border-color: #ef4444;
+}
+
+.StripeElement--webkit-autofill {
+  background-color: #fefde8 !important;
+}

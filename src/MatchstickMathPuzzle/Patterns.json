@@ -1,0 +1,533 @@
+{
+  "0": [
+    [{ "id": "a", "status": true },
+    { "id": "b", "status": true },
+    { "id": "c", "status": true },
+    { "id": "d", "status": false },
+    { "id": "e", "status": true },
+    { "id": "f", "status": true },
+    { "id": "g", "status": true }]
+  ],
+  "1": [
+    [{ "id": "a", "status": false },
+    { "id": "b", "status": false },
+    { "id": "c", "status": true },
+    { "id": "d", "status": false },
+    { "id": "e", "status": false },
+    { "id": "f", "status": true },
+    { "id": "g", "status": false }]
+  ],
+  "2": [
+    [{ "id": "a", "status": true },
+    { "id": "b", "status": false },
+    { "id": "c", "status": true },
+    { "id": "d", "status": true },
+    { "id": "e", "status": true },
+    { "id": "f", "status": false },
+    { "id": "g", "status": true }]
+  ],
+  "3": [
+    [{ "id": "a", "status": true },
+    { "id": "b", "status": false },
+    { "id": "c", "status": true },
+    { "id": "d", "status": true },
+    { "id": "e", "status": false },
+    { "id": "f", "status": true },
+    { "id": "g", "status": true }]
+  ],
+  "4": [
+    [{ "id": "a", "status": false },
+    { "id": "b", "status": true },
+    { "id": "c", "status": true },
+    { "id": "d", "status": true },
+    { "id": "e", "status": false },
+    { "id": "f", "status": true },
+    { "id": "g", "status": false }]
+  ],
+  "5": [
+  [  { "id": "a", "status": true },
+    { "id": "b", "status": true },
+    { "id": "c", "status": false },
+    { "id": "d", "status": true },
+    { "id": "e", "status": false },
+    { "id": "f", "status": true },
+    { "id": "g", "status": true }]
+  ],
+  "6": [
+   [ { "id": "a", "status": true },
+    { "id": "b", "status": true },
+    { "id": "c", "status": false },
+    { "id": "d", "status": true },
+    { "id": "e", "status": true },
+    { "id": "f", "status": true },
+    { "id": "g", "status": true }]
+  ],  
+  "7": [
+   [ { "id": "a", "status": true },
+    { "id": "b", "status": false },
+    { "id": "c", "status": true },
+    { "id": "d", "status": false },
+    { "id": "e", "status": false },
+    { "id": "f", "status": true },
+    { "id": "g", "status": false }]
+  ],
+  "8": [
+   [ { "id": "a", "status": true },
+    { "id": "b", "status": true },
+    { "id": "c", "status": true },
+    { "id": "d", "status": true },
+    { "id": "e", "status": true },
+    { "id": "f", "status": true },
+    { "id": "g", "status": true }]
+  ],
+  "9": [
+    [{ "id": "a", "status": true },
+    { "id": "b", "status": true },
+    { "id": "c", "status": true },
+    { "id": "d", "status": true },
+    { "id": "e", "status": false },
+    { "id": "f", "status": true },
+    { "id": "g", "status": true }]
+  ],
+
+    "+": [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true }
+    ],
+    "-": [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false }
+    ],
+    "=": [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true }
+    ],
+ 
+  
+  
+  
+  "10": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": true },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "11": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ]
+  ],
+  "12": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "13": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "14": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": true },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ]
+  ],
+  "15": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": false },
+      { "id": "d", "status": true },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "16": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": false },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "17": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ]
+  ],
+  "18": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "19": [
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "20": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": true },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ]
+,"21": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ]
+  ],
+  "22": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "23": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "24": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": false },
+      { "id": "b", "status": true },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ]
+  ],
+  "25": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": false },
+      { "id": "d", "status": true },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "26": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": false },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "27": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": false }
+    ]
+  ],
+  "28": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "29": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": true },
+      { "id": "f", "status": false },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ],
+  "30": [
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": false },
+      { "id": "c", "status": true },
+      { "id": "d", "status": true },
+      { "id": "e", "status": false },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ],
+    [
+      { "id": "a", "status": true },
+      { "id": "b", "status": true },
+      { "id": "c", "status": true },
+      { "id": "d", "status": false },
+      { "id": "e", "status": true },
+      { "id": "f", "status": true },
+      { "id": "g", "status": true }
+    ]
+  ]
+
+
+
+}
+   
