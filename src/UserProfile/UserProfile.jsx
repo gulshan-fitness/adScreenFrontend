@@ -95,7 +95,7 @@ const UserProfileDashboard = () => {
 
     { id: 'campaigns', label: 'My Campaigns', icon: <SiGoogleads className="text-xl" />, mobile: true, path: 'campaigns' },
     { id: 'wallet', label: 'Wallet', icon: <MdAccountBalanceWallet className="text-xl" />, mobile: true, path: 'wallet' },
-    { id: 'bookings', label: 'Booked Slots', icon: <FaRegCalendarCheck className="text-xl" />, mobile: true, path: 'bookings' },
+    { id: 'bookings', label: 'Booking List', icon: <FaRegCalendarCheck className="text-xl" />, mobile: true, path: 'bookinglist' },
     { id: 'upload', label: 'Upload Ads', icon: <FaUpload className="text-xl" />, mobile: false, path: 'upload' },
     { id: 'tracking', label: 'Live Tracking', icon: <MdVisibility className="text-xl" />, mobile: false, path: 'tracking' },
     { id: 'history', label: 'Payment History', icon: <MdHistory className="text-xl" />, mobile: false, path: 'history' },

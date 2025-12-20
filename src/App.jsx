@@ -52,6 +52,7 @@ import ProfileDetails from "./UserProfile/ProfileDetails";
 import Wallet from "./User/Wallet";
 import SlotCreationComponent from "./User/SlotCreationForm";
 import SlotBooking from "./User/SlotBooking";
+import MyBookingsPage from "./SlotBooking/BookingList";
 
 
 function App() {
@@ -263,6 +264,11 @@ function App() {
     {
       path: "findscreens",
       element: <SlotBooking />
+    },
+
+      {
+      path: "bookinglist",
+      element: <MyBookingsPage />
     },
     // {
     //   path: "campaigns",

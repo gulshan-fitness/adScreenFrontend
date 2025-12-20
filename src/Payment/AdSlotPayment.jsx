@@ -111,14 +111,11 @@ setLoading(true)
   setLoading(false)
 }
 };
-
-
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [loading, setLoading] = useState(false);
   const [price] = useState(5000); // Static price for ad slot in INR
   const [clientSecret, setClientSecret] = useState(null);
   const [showStripe, setShowStripe] = useState(false);
-
   const [currency] = useState("USD"); 
   const [ Booking_id]= useState("6942589526e2ad55930564cd"); 
 

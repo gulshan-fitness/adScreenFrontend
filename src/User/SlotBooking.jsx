@@ -607,6 +607,8 @@ const Navigater= useNavigate()
               </div>
 
               {/* Screen Info */}
+
+              
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 border border-blue-100">
                 <div className="flex items-center gap-3">
                   <img
@@ -622,6 +624,8 @@ const Navigater= useNavigate()
                   </div>
                 </div>
               </div>
+
+
 
               {/* Supported Formats Info */}
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
