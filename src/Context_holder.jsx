@@ -15,6 +15,7 @@ import {
 } from 'react-icons/md';
 
 
+
 const Context = createContext();
 
 export default function Context_holder(props) {
@@ -434,6 +435,36 @@ const getCurrencySymbol = (code = "") => {
 
   
   
+  const BookingdoneHandler = async (transaction_id, Booking_id) => {
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}bookingdone/${Booking_id}/${transaction_id}`,
+      {},
+      {
+        headers: {
+          Authorization: usertoken,
+        },
+      }
+    );
+
+    const { data } = response;
+
+    if (data.status === 1) {
+      return data
+    }
+
+    return { state: 0, msg: data?.msg || "Failed" };
+
+
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || error.message || "Failed";
+
+    notify(errorMessage, 0);
+
+    return { status: 0, msg: errorMessage };
+  }
+};
 
 
 
@@ -524,7 +555,7 @@ const menu_links = [
 
 
 
-        FetchApi,getCurrencySymbol
+        FetchApi,getCurrencySymbol,BookingdoneHandler
       }}
     >
       {props.children}

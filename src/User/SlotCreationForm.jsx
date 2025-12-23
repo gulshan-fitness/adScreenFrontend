@@ -544,98 +544,191 @@ const currencies = [
                         </div>
                     ) : (
                         filteredScreens.map(screen => (
-                            <div 
-                                key={screen._id} 
-                                className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer overflow-hidden border border-gray-100"
-                                onClick={() => handleScreenSelect(screen)}
-                            >
-                                {/* Card Header */}
-                                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-2xl">
-                                                {getScreenTypeIcon(screen.screenType)}
-                                            </span>
-                                            <div>
-                                                <span className="text-xs font-mono text-gray-500 block">ID: {screen._id?.substring(0, 8) || 'N/A'}</span>
-                                                <span className={`text-xs font-medium px-2 py-1 rounded-full ${screen.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                    {screen.status ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            {screen.basePrice && (
-                                                <span className="text-lg font-bold text-blue-600">
-                                                    {screen.currency || '₹'}{screen.basePrice}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                          <div 
+  key={screen._id} 
+  className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-200 active:scale-[0.98]"
+  onClick={() => handleScreenSelect(screen)}
+>
+  {/* Card Header - More compact on mobile */}
+  <div className="p-3 sm:p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+    <div className="flex justify-between items-start gap-2">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <div className="text-xl sm:text-2xl text-blue-600">
+          {getScreenTypeIcon(screen.screenType)}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-gray-800 text-sm sm:text-base truncate">
+            {screen.screenName || 'Digital Screen'}
+          </h3>
+          <div className="flex items-center gap-2 mt-1">
+            <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+              screen.status 
+                ? 'bg-green-100 text-green-800 border border-green-200' 
+                : 'bg-red-100 text-red-800 border border-red-200'
+            }`}>
+              {screen.status ? 'Active' : 'Inactive'}
+            </span>
+            <span className="text-xs text-gray-500 hidden sm:block">
+              ID: {screen._id?.substring(0, 6)}...
+            </span>
+          </div>
+        </div>
+      </div>
+      {screen.basePrice && (
+        <div className="text-right flex-shrink-0">
+          <div className="text-lg sm:text-xl font-bold text-blue-600">
+            {screen.currency || '₹'}{screen.basePrice}
+          </div>
+          <div className="text-xs text-gray-500">per slot</div>
+        </div>
+      )}
+    </div>
+  </div>
 
-                                {/* Screen Image */}
-                                <div className="relative h-48 bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
-                                    {screen.image ? (
-                                        <img 
-                                            src={screen.image} 
-                                            alt={screen.screenType}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <div className="text-center">
-                                                <FaTv className="text-6xl text-gray-300 mb-2" />
-                                                <p className="text-gray-400 text-sm">Screen Preview</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700">
-                                        {screen.screenType?.toUpperCase()}
-                                    </div>
-                                </div>
+  {/* Screen Image */}
+  <div className="relative h-40 sm:h-48 bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
+    {screen.image ? (
+      <img 
+        src={screen.image} 
+        alt={screen.screenName || 'Screen Image'}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        loading="lazy"
+      />
+    ) : (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl sm:text-5xl text-gray-300 mb-2">
+            {getScreenTypeIcon(screen.screenType)}
+          </div>
+          <p className="text-gray-400 text-xs sm:text-sm">Screen Preview</p>
+        </div>
+      </div>
+    )}
+    {/* Floating badges */}
+    <div className="absolute top-2 right-2 flex flex-col gap-1">
+      <div className="bg-white/90 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full text-xs font-medium text-gray-700 shadow-sm">
+        {screen.screenType?.toUpperCase() || 'LCD'}
+      </div>
+      {screen.rating > 0 && (
+        <div className="bg-yellow-100/90 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full text-xs font-bold text-yellow-800 shadow-sm">
+          ⭐ {screen.rating.toFixed(1)}
+        </div>
+      )}
+    </div>
+  </div>
 
-                                {/* Screen Details */}
-                                <div className="py-5 px-2">
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <FaMapMarkerAlt className="text-red-500" />
-                                            <span className="font-medium">
-                                                {screen.address?.city || 'City'}, {screen.address?.state || 'State'}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <FaTv className="text-blue-500" />
-                                            <span className="text-sm">
-                                                {getLocationTypeLabel(screen.locationType)}
-                                            </span>
-                                        </div>
-                                    </div>
+  {/* Screen Details */}
+  <div className="p-4 sm:p-5">
+    {/* Location Info */}
+    <div className="space-y-3 mb-4">
+      <div className="flex items-start gap-2 text-gray-700">
+        <span className="text-red-500 mt-0.5">📍</span>
+        <div className="flex-1">
+          <div className="font-medium text-sm sm:text-base">
+            {screen.address?.city || 'City'}, {screen.address?.state || 'State'}
+          </div>
+          {screen.address?.street && (
+            <div className="text-xs text-gray-500 truncate mt-1">
+              {screen.address.street}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2 text-gray-600">
+        <span className="text-blue-500">🏢</span>
+        <span className="text-sm">
+          {getLocationTypeLabel(screen.locationType) || 'Public Space'}
+        </span>
+      </div>
+    </div>
 
-                                    {/* Specifications */}
-                                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
-                                        <div className="bg-gray-50 p-3 rounded-lg">
-                                            <div className="text-xs text-gray-500 font-medium mb-1">Resolution</div>
-                                            <div className="text-sm font-semibold text-gray-800">
-                                                {screen.resolution?.width || 0}×{screen.resolution?.height || 0}
-                                            </div>
-                                        </div>
-                                        <div className="bg-gray-50 p-3 rounded-lg">
-                                            <div className="text-xs text-gray-500 font-medium mb-1">Size</div>
-                                            <div className="text-sm font-semibold text-gray-800">
-                                                {screen.size?.diagonal || 0}"
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+    {/* Specifications Grid - Responsive */}
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4 border-t border-gray-100">
+      <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
+        <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
+          <span className="mr-1">🖥️</span> Res
+        </div>
+        <div className="text-sm font-semibold text-gray-800 truncate">
+          {screen.resolution?.width || 0}×{screen.resolution?.height || 0}
+        </div>
+      </div>
+      
+      <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
+        <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
+          <span className="mr-1">📐</span> Size
+        </div>
+        <div className="text-sm font-semibold text-gray-800">
+          {screen.size?.diagonal || 0}"
+        </div>
+      </div>
+      
+      <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
+        <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
+          <span className="mr-1">📱</span> Orient
+        </div>
+        <div className="text-sm font-semibold text-gray-800 capitalize">
+          {screen.orientation || 'Landscape'}
+        </div>
+      </div>
+      
+      <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
+        <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
+          <span className="mr-1">📁</span> Formats
+        </div>
+        <div className="text-sm font-semibold text-gray-800">
+          {screen.supportedFormats?.length || 0}
+        </div>
+      </div>
+    </div>
 
-                                {/* Card Footer */}
-                                <div className="p-4 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100">
-                                    <button className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-xl transition-all duration-300 transform group-hover:scale-[1.02] active:scale-95 shadow-md hover:shadow-lg">
-                                        <FaCalendarPlus className="text-lg" />
-                                        Create Slot
-                                    </button>
-                                </div>
-                            </div>
+    {/* Additional Info (Collapsible on mobile) */}
+    {screen.supportedFormats?.length > 0 && (
+      <details className="group mt-4 sm:hidden">
+        <summary className="flex items-center text-xs text-blue-600 font-medium cursor-pointer list-none">
+          <span>View supported formats</span>
+          <svg className="w-4 h-4 ml-1 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <div className="mt-2 flex flex-wrap gap-1">
+          {screen.supportedFormats.map((format, index) => (
+            <span key={index} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
+              {format.toUpperCase()}
+            </span>
+          ))}
+        </div>
+      </details>
+    )}
+
+    {/* Visible on larger screens */}
+    {screen.supportedFormats?.length > 0 && (
+      <div className="hidden sm:flex flex-wrap gap-1 mt-3">
+        {screen.supportedFormats.slice(0, 3).map((format, index) => (
+          <span key={index} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
+            {format.toUpperCase()}
+          </span>
+        ))}
+        {screen.supportedFormats.length > 3 && (
+          <span className="text-xs text-gray-500">+{screen.supportedFormats.length - 3} more</span>
+        )}
+      </div>
+    )}
+  </div>
+
+  {/* Card Footer */}
+  <div className="p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100">
+    <button 
+      onClick={(e) => {
+        e.stopPropagation();
+        handleScreenSelect(screen);
+      }}
+      className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-xl transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
+    >
+      <span className="text-lg">📅</span>
+      <span className="text-sm sm:text-base">Book Slots</span>
+    </button>
+  </div>
+</div>
                         ))
                     )}
                 </div>

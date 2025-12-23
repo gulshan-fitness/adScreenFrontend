@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import PropTypes from "prop-types";
 import {
   Elements,
@@ -7,11 +7,12 @@ import {
   useElements
 } from "@stripe/react-stripe-js";
 import { stripePromise } from "./stripePromise";
+import { Context } from "../Context_holder";
 
 /* =========================
    Checkout Form
 ========================= */
-function CheckoutForm({ onClose, notify, onSuccess }) {
+function CheckoutForm({ onClose, notify, onSuccess,booking_id,BookingdoneHandler }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,7 @@ const handleSubmit = async (e) => {
 
   setLoading(true);
 
-  const { error, paymentIntent } = await stripe.confirmPayment({
+  const { error, paymentIntent} = await stripe.confirmPayment({
     elements,
     redirect: "if_required"
   });
@@ -46,16 +47,27 @@ const handleSubmit = async (e) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          paymentIntentId: paymentIntent.id
+          paymentIntentId: paymentIntent.id,
+
         })
       }
     );
 
     const result = await res.json();
 
+
+    console.log(result,">>>>>>>>>result");
+    
+
     if (result.status === 1) {
       notify("Payment successful!", 1);
       onSuccess?.(paymentIntent);
+
+        const res=await  BookingdoneHandler(result?.Transaction_id,booking_id)
+
+          if(res?.status==1){
+            navigate("/paymentsuccess")
+          }
       onClose();
     } else if (result.status === 2) {
       notify("Payment processing. Please wait.", 2);
@@ -112,8 +124,12 @@ export default function StripePaymentModal({
   clientSecret,
   onClose,
   notify,
-  onSuccess
+  onSuccess,
+  booking_id
+
 }) {
+
+  const{ BookingdoneHandler}=useContext(Context)
   if (!clientSecret) return null;
 
   const appearance = {
@@ -151,6 +167,8 @@ export default function StripePaymentModal({
             notify={notify}
             onClose={onClose}
             onSuccess={onSuccess}
+            booking_id={booking_id}
+            BookingdoneHandler={BookingdoneHandler}
           />
         </Elements>
 

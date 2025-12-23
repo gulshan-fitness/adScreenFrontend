@@ -39,14 +39,17 @@ import { MdLocationOn, MdScreenShare } from 'react-icons/md';
 import { Context } from '../Context_holder';
 import axios from 'axios';
 import { socket } from '../../Socket';
+import AdSlotPayment from '../Payment/AdSlotPayment';
 
 const BookingList = () => {
   const { usertoken, user, FetchApi ,notify} = useContext(Context);
+  const [step,setstep] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('date');
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [mediaShow,setmediaShow]= useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -57,8 +60,16 @@ const BookingList = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(false); // Added loading state
 
+
+
+
+
+
   const videoRef = useRef(null);
   const mediaContainerRef = useRef(null);
+ 
+
+
 
   useEffect(() => {
     if (!user?._id || user?.role !== "advertiser") return;
@@ -77,6 +88,8 @@ const BookingList = () => {
       setBookings((predata) => {
         const Newarr = [...predata];
         const index = predata.findIndex(item => item?._id === data?._id);
+
+
         if (index !== -1) {
           Newarr.splice(index, 1, data);
         }
@@ -110,11 +123,24 @@ const BookingList = () => {
         console.error("Error fetching bookings:", err);
       });
   }
+  
 
   useEffect(() => {
     if (!user || !usertoken) return;
     getBooking(user, usertoken);
   }, [user, usertoken]);
+
+
+
+const payHandler=(bookingData)=>{
+setstep(false)
+ setSelectedBooking(bookingData);
+
+
+
+}
+
+
 
   // Filter bookings based on status
   const filteredBookings = bookings.filter(booking => {
@@ -194,11 +220,13 @@ const statusConfig = {
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
     setCurrentMediaIndex(0);
+    setmediaShow(true)
     setIsPlaying(true);
   };
 
   const closeDetails = () => {
     setSelectedBooking(null);
+    setmediaShow(false)
     setCurrentMediaIndex(0);
     setIsPlaying(false);
     if (videoRef.current) {
@@ -427,7 +455,9 @@ const statusConfig = {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 p-3 md:p-6 relative">
+<>
+{step ?
+( <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 p-3 md:p-6 relative">
       {/* Loading Overlay */}
       {loading && <LoadingSpinner />}
 
@@ -620,7 +650,7 @@ const statusConfig = {
                   <div className="flex items-start justify-between">
                     <div>
                       <span className="rounded-full bg-gray-800 px-3 py-1 text-xs font-medium text-gray-300">
-                        #{booking.id}
+                        #{booking?._id}
                       </span>
                       <div className="mt-2 flex items-center gap-2">
                         <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-white ${status.color}`}>
@@ -638,7 +668,7 @@ const statusConfig = {
                   {/* Card Content */}
                   <div className="mt-4">
                     <h3 className="mb-3 line-clamp-1 text-lg font-semibold text-white">
-                      {booking.advertiser_name}
+                      {booking?.advertiser_id?.name?? booking?.advertiser?.name}
                     </h3>
 
                     <div className="space-y-3">
@@ -648,7 +678,7 @@ const statusConfig = {
                         </div>
                         <div>
                           <p className="text-sm text-gray-400">Screen</p>
-                          <p className="font-medium text-white">{booking.screen_name}</p>
+                          <p className="font-medium text-white">{booking?.screen?.screenName ?? booking?.screen_id?.screenName }</p>
                         </div>
                       </div>
 
@@ -658,7 +688,7 @@ const statusConfig = {
                         </div>
                         <div>
                           <p className="text-sm text-gray-400">Location</p>
-                          <p className="font-medium text-white">{booking.location}</p>
+                          <p className="font-medium text-white">{booking?.screen?.address?.city?? booking?.screen_id?.address?.city}</p>
                         </div>
                       </div>
 
@@ -670,6 +700,10 @@ const statusConfig = {
                           <p className="text-sm text-gray-400">Schedule</p>
                           <p className="font-medium text-white">
                             {formatDate(booking.start_datetime)} • {formatTimeOnly(booking.start_datetime)}
+                          </p>
+
+                            <p className="font-medium text-white">
+                            {formatDate(booking.end_datetime)} • {formatTimeOnly(booking.end_datetime)}
                           </p>
                         </div>
                       </div>
@@ -746,6 +780,7 @@ const statusConfig = {
                     {user?.role == "advertiser" ? (
                       <button
                         disabled={!booking?.approved || !booking?.booking_status=="rejected"}
+                        onClick={()=> payHandler(booking) }
                         className="rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-white transition-all
                                    hover:bg-gray-800
                                    disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-gray-800/50"
@@ -818,7 +853,7 @@ const statusConfig = {
       )}
 
       {/* Details Modal */}
-      {selectedBooking && (
+      {selectedBooking && mediaShow&& (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
           <div className="flex h-[95vh] w-[96%] max-w-7xl flex-col overflow-hidden rounded-xl bg-zinc-900 text-white">
             {/* Header */}
@@ -961,24 +996,61 @@ const statusConfig = {
                 <div className="rounded-xl bg-zinc-800 p-3">
                   <h4 className="mb-2 text-xs font-semibold">Ad Files</h4>
                   <div className="flex gap-3 overflow-x-auto md:grid md:grid-cols-3">
-                    {selectedBooking.adfiles.map((file, index) => (
-                      <div
-                        key={index}
-                        onClick={() => setCurrentMediaIndex(index)}
-                        className={`min-w-[80px] cursor-pointer rounded-lg p-1 ${index === currentMediaIndex
-                            ? "ring-2 ring-green-500"
-                            : "bg-zinc-700"
-                          }`}
-                      >
-                        <img
-                          src={file}
-                          className="h-16 w-full rounded object-cover"
-                        />
-                        <p className="mt-1 truncate text-[10px]">
-                          {file.split("/").pop()}
-                        </p>
-                      </div>
-                    ))}
+                  {selectedBooking.adfiles.map((file, index) => {
+  const ext = file?.split(".").pop()?.toLowerCase();
+  const isVideo = ["mp4", "webm", "ogg", "mov"].includes(ext);
+  const isImage = ["jpg", "jpeg", "png", "webp", "gif"].includes(ext);
+
+  return (
+    <div
+      key={index}
+      onClick={() => setCurrentMediaIndex(index)}
+      className={`relative min-w-[80px] cursor-pointer overflow-hidden rounded-lg p-1 transition-all
+        ${index === currentMediaIndex
+          ? "ring-2 ring-green-500 bg-zinc-800"
+          : "bg-zinc-700 hover:bg-zinc-600"
+        }`}
+    >
+      {/* Thumbnail */}
+      {isImage ? (
+        <img
+          src={file}
+          alt="Ad file"
+          loading="lazy"
+          className="h-16 w-full rounded object-cover"
+          onError={(e) => (e.currentTarget.src = "/image-placeholder.png")}
+        />
+      ) : isVideo ? (
+        <div className="relative flex h-16 w-full items-center justify-center rounded bg-black">
+          <FaPlayCircle className="text-2xl text-white/80" />
+        </div>
+      ) : (
+        <div className="flex h-16 w-full items-center justify-center rounded bg-zinc-800">
+          <FaFile className="text-xl text-zinc-400" />
+        </div>
+      )}
+
+      {/* File Type Badge */}
+      <span
+        className={`absolute right-1 top-1 rounded px-1.5 py-[2px] text-[9px] font-semibold
+          ${isVideo
+            ? "bg-blue-600 text-white"
+            : isImage
+              ? "bg-emerald-600 text-white"
+              : "bg-zinc-600 text-white"
+          }`}
+      >
+        {isVideo ? "VIDEO" : isImage ? "IMAGE" : "FILE"}
+      </span>
+
+      {/* Filename */}
+      <p className="mt-1 truncate text-[10px] text-zinc-300">
+        {file.split("/").pop()}
+      </p>
+    </div>
+  );
+})}
+
                   </div>
                 </div>
 
@@ -1011,7 +1083,15 @@ const statusConfig = {
           </div>
         </div>
       )}
-    </div>
+    </div>):(
+
+      <AdSlotPayment selectedBooking={selectedBooking&&selectedBooking} setstep={setstep}/>
+    )
+
+}
+</>
+
+   
   );
 };
 
