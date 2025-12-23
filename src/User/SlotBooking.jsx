@@ -46,6 +46,39 @@ const Navigater= useNavigate()
       });
   }, [user, usertoken, address, notify]);
 
+
+  
+  useEffect(() => {
+
+  const payload = selectedSlots.map(slot => ({
+    slot_id: slot._id,
+    screen_id: selectedScreen._id,
+    advertiser_id: user._id,
+
+    start_datetime: slot.start_datetime,
+    end_datetime: slot.end_datetime,
+    duration_minutes: slot.duration_minutes,
+
+    price: slot.price,
+
+    adfiles: (slotAds?.[slot._id]?.files ),
+    qrcode: "", // backend will generate later
+    redirectlink: slotAds?.[slot._id]?.redirectLink || "",
+
+    currency: slot.currency || "INR",
+
+    booking_status: "pending",
+    payment_status: "pending"
+
+    
+  }));
+
+  // ✅ Store in state
+  setSlotBookingPayload(payload);
+  
+  }, [user, selectedSlots]);
+
+
   // Handle screen selection
   const handleScreenSelect = (screen) => {
     setSelectedScreen(screen);
@@ -78,6 +111,7 @@ const Navigater= useNavigate()
       delete newSlotAds[slot?._id];
       setSlotAds(newSlotAds);
     } else {
+   
       // Add to selected slots
       setSelectedSlots([...selectedSlots, slot]);
       // Initialize ad data for new slot
@@ -92,123 +126,137 @@ const Navigater= useNavigate()
   };
 
   // Handle file upload for a specific slot
-  const handleFileUpload = (slotId, files) => {
-    setSlotAds({
-      ...slotAds,
-      [slotId]: {
-        ...slotAds?.[slotId],
-        files: Array.from(files || [])
-      }
-    });
-  };
+// Assuming your data is an array of slot booking objects, e.g.:
+// const slotBookingPayload = [{ slot_id: "...", files: [], redirectlink: "", ... }, ...];
 
-  // Handle redirect link change for a specific slot
-  const handleRedirectLinkChange = (slotId, link) => {
-    setSlotAds({
-      ...slotAds,
-      [slotId]: {
-        ...slotAds?.[slotId],
-        redirectLink: link || ''
-      }
-    });
-  };
+// Update files for a specific slot by slot_id
+const handleFileUpload = (slotId, files) => {
+  setSlotBookingPayload((prevData) => {
+    const newArr = [...prevData];
+    const index = newArr.findIndex((d) => d.slot_id === slotId);
 
-  // Remove file from a slot
-  const handleRemoveFile = (slotId, fileIndex) => {
-    const updatedFiles = [...(slotAds?.[slotId]?.files || [])];
-    updatedFiles.splice(fileIndex, 1);
-    
-    setSlotAds({
-      ...slotAds,
-      [slotId]: {
-        ...slotAds?.[slotId],
-        files: updatedFiles
-      }
-    });
-  };
+    if (index !== -1) {
+      newArr[index] = {
+        ...newArr[index],
+        files: Array.from(files || []), // Store the FileList as array
+      };
+    }
 
-  // Proceed to payment after upload step
- const proceedToPayment = () => {
-  // Validate uploads / redirect link
-  const invalidSlots = selectedSlots.filter(slot => {
-    const adData = slotAds?.[slot._id];
-    return (!adData || (!adData.files?.length && !adData.redirectLink));
+    return newArr;
   });
+};
 
-  if (invalidSlots.length > 0) {
-    notify?.('Please upload files or add a redirect link for all selected slots', 0);
-    return;
+// Handle redirect link change for a specific slot
+const handleRedirectLinkChange = (slotId, link) => {
+  setSlotBookingPayload((prevData) => {
+    const newArr = [...prevData];
+    const index = newArr.findIndex((d) => d.slot_id === slotId);
+
+    if (index !== -1) {
+      newArr[index] = {
+        ...newArr[index],
+        redirectlink: link || '',
+      };
+    }
+
+    return newArr;
+  });
+};
+
+// Remove a specific file from a slot's files array
+const handleRemoveFile = (slotId, fileIndex) => {
+  setSlotBookingPayload((prevData) => {
+    const newArr = [...prevData];
+    const index = newArr.findIndex((d) => d.slot_id === slotId);
+
+    if (index !== -1) {
+      const updatedFiles = [...(newArr[index].files || [])];
+      updatedFiles.splice(fileIndex, 1);
+
+      newArr[index] = {
+        ...newArr[index],
+        files: updatedFiles,
+      };
+    }
+
+    return newArr;
+  });
+};
+
+
+
+
+console.log(slotBookingPayload,">>>>>>slotBookingPayload");
+
+
+const apiHandler = async (Payload) => {
+  if (!usertoken) throw new Error("Unauthorized");
+   
+
+  const fd = new FormData();
+
+  if (Payload?.adfiles) {
+  for (const item of Payload?.adfiles) {
+      fd.append("file", item);
+    }
+
+    
   }
 
-  // 🔥 Build slot-wise booking payload
-  const payload = selectedSlots.map(slot => ({
-    slot_id: slot._id,
-    screen_id: selectedScreen._id,
-    advertiser_id: user._id,
+  const { adfiles, ...rest } = Payload;
+  fd.append("data", JSON.stringify(rest));
 
-    start_datetime: slot.start_datetime,
-    end_datetime: slot.end_datetime,
-    duration_minutes: slot.duration_minutes,
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}createBooking`,
+      fd,
+      { headers: { Authorization: usertoken } }
+    );
 
-    price: slot.price,
+    const { data } = response;
+    notify(data.msg, data.status);
 
-    adfiles: (slotAds?.[slot._id]?.files ),
-    qrcode: "", // backend will generate later
-    redirectlink: slotAds?.[slot._id]?.redirectLink || "",
+    if (data.status !== 1) {
+      throw new Error(data.msg || "Booking failed");
+    }
 
-    currency: slot.currency || "INR",
+    return data; // ✅ IMPORTANT
 
-    booking_status: "pending",
-    payment_status: "pending"
-  }));
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message ||
+      error.message ||
+      "Booking failed";
 
-  // ✅ Store in state
-  setSlotBookingPayload(payload);
+    notify(errorMessage, 0);
+    throw error; // ✅ stop sequence
+  }
+};
 
-  console.log("Slot Booking Payload:", payload);
 
-  // Move to payment step
-  setStep(4);
+  // Handle payment option selection
+  const handlePaymentLater = async () => {
+  try {
+setLoading(true)
+
+    for (const item of slotBookingPayload) {
+      await apiHandler(item); // waits for each response
+    }
+   
+
+  } catch (error) {
+    console.error("Booking stopped:", error);
+    // step will NOT change
+  }
+  finally {
+  setLoading(false)
+}
 };
 
 
 
 
 
-  // Final booking submission
-  const handleFinalBooking = () => {
-
-    
-    // Prepare final payload according to your schema
-    const finalPayload = selectedSlots?.map(slot => ({
-      slot_id: slot?._id,
-      screen_id: selectedScreen?._id,
-      advertiser_id: user?._id, // Assuming user object has _id
-      start_datetime: slot?.start_datetime,
-      end_datetime: slot?.end_datetime,
-      duration_minutes: slot?.duration_minutes,
-      price: slot?.price,
-      adfiles: (slotAds?.[slot?._id]?.files || []).map(file => file?.name), // You might need to upload files first and get URLs
-      qrcode: '', // Generate or leave empty for now
-      redirectlink: slotAds?.[slot?._id]?.redirectLink || '',
-      currency: slot?.currency || 'INR',
-      booking_status: "pending",
-      payment_status: "pending"
-    }));
-
-    console.log('Final Booking Payload:', finalPayload);
-
-
-    // Call your booking API here
-    // FetchApi('POST', import.meta.env.VITE_USER_URL, "bookslots", finalPayload, null, null, usertoken)
-    //   .then((res) => {
-    //     notify('Booking successful!', 1);
-    //     // Handle success
-    //   })
-    //   .catch((err) => {
-    //     notify('Booking failed', 0);
-    //   });
-  };
 
   // Format time for display
   const formatTime = (dateTimeString) => {
@@ -763,7 +811,7 @@ const Navigater= useNavigate()
                   ← Back to Slots
                 </button>
                 <button
-                  onClick={proceedToPayment}
+                  onClick={handlePaymentLater}
                   className="flex-1 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-300 text-sm sm:text-base"
                 >
                   Proceed to Payment →

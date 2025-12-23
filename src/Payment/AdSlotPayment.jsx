@@ -48,69 +48,8 @@ export default function AdSlotPayment({slotBookingPayload}) {
   const { notify, user,getCurrencySymbol ,usertoken} = useContext(Context);
 
 
-const apiHandler = async (Payload) => {
-  if (!usertoken) throw new Error("Unauthorized");
-   
-
-  const fd = new FormData();
-
-  if (Payload?.adfiles) {
-  for (const item of Payload?.adfiles) {
-      fd.append("file", item);
-    }
-
-    
-  }
-
-  const { adfiles, ...rest } = Payload;
-  fd.append("data", JSON.stringify(rest));
-
-  try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}createBooking`,
-      fd,
-      { headers: { Authorization: usertoken } }
-    );
-
-    const { data } = response;
-    notify(data.msg, data.status);
-
-    if (data.status !== 1) {
-      throw new Error(data.msg || "Booking failed");
-    }
-
-    return data; // ✅ IMPORTANT
-
-  } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      error.message ||
-      "Booking failed";
-
-    notify(errorMessage, 0);
-    throw error; // ✅ stop sequence
-  }
-};
 
 
-  // Handle payment option selection
-  const handlePaymentLater = async () => {
-  try {
-setLoading(true)
-
-    for (const item of slotBookingPayload) {
-      await apiHandler(item); // waits for each response
-    }
-   
-
-  } catch (error) {
-    console.error("Booking stopped:", error);
-    // step will NOT change
-  }
-  finally {
-  setLoading(false)
-}
-};
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [loading, setLoading] = useState(false);
   const [price] = useState(5000); // Static price for ad slot in INR
@@ -120,16 +59,6 @@ setLoading(true)
   const [ Booking_id]= useState("6942589526e2ad55930564cd"); 
 
 
-
-  const  [PayloadData, setPayloadData] = useState({
-      
-        booking_id: bookingData.booking_id,
-        metadata: {
-          slot_id: bookingData.slot_id,
-          screen_id: bookingData.screen_id,
-          booking_type: "ad_slot"
-        }
-      });
   
   const navigate = useNavigate();
 

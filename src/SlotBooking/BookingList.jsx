@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useContext } from 'react';
 import { 
@@ -32,17 +29,19 @@ import {
   FaVolumeMute,
   FaQrcode,
   FaExternalLinkAlt,
-  FaFile
+  FaFile,
+  FaCaretDown,
+  FaInfoCircle,
+  FaChartLine,
+  FaSpinner
 } from 'react-icons/fa';
 import { MdLocationOn, MdScreenShare } from 'react-icons/md';
 import { Context } from '../Context_holder';
-
-
+import axios from 'axios';
+import { socket } from '../../Socket';
 
 const BookingList = () => {
-
-    const {usertoken,user,FetchApi}=useContext(Context)
-
+  const { usertoken, user, FetchApi ,notify} = useContext(Context);
   const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,31 +54,67 @@ const BookingList = () => {
   const [mediaProgress, setMediaProgress] = useState(0);
   const [mediaDuration, setMediaDuration] = useState(0);
   const [mediaCurrentTime, setMediaCurrentTime] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(false); // Added loading state
 
   const videoRef = useRef(null);
   const mediaContainerRef = useRef(null);
-  const progressIntervalRef = useRef(null);
 
+  useEffect(() => {
+    if (!user?._id || user?.role !== "advertiser") return;
 
-console.log(selectedBooking,">>");
+    // Connect socket
+    socket.connect();
 
-  
-    useEffect(() => {
-          if (!user || !usertoken) return;
-       
-  
-          FetchApi(null, import.meta.env.VITE_USER_URL, "getbookings", user?._id, null, null, usertoken)
-              .then((res) => {
-                  setBookings(res);
-                
-              })
-              .catch((err) => {
-                  setBookings([]);
-                 
-                  notify('Failed to load screens', 0);
-              })
-           
-      }, [user, usertoken]);
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      // Join backend room
+      socket.emit("JoinBookingRoom", user?._id);
+    });
+
+    // Listen booking updates
+    socket.on("BookingUpdate", (data) => {
+      setBookings((predata) => {
+        const Newarr = [...predata];
+        const index = predata.findIndex(item => item?._id === data?._id);
+        if (index !== -1) {
+          Newarr.splice(index, 1, data);
+        }
+        return Newarr;
+      });
+      console.log("Booking update:", data);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("BookingUpdate");
+      socket.off("disconnect");
+      socket.disconnect();
+    };
+  }, [user]);
+
+  const getBooking = (user, usertoken) => {
+    setLoading(true); // Start loading
+    FetchApi(null, import.meta.env.VITE_USER_URL, "getbookings", `${user?.role == "advertiser" ? `${user?._id}/null` : `null/${user?._id}`}`, null, null, usertoken)
+      .then((res) => {
+        setBookings(res);
+        setLoading(false); // Stop loading on success
+      })
+      .catch((err) => {
+        setBookings([]);
+        setLoading(false); // Stop loading on error
+        console.error("Error fetching bookings:", err);
+      });
+  }
+
+  useEffect(() => {
+    if (!user || !usertoken) return;
+    getBooking(user, usertoken);
+  }, [user, usertoken]);
 
   // Filter bookings based on status
   const filteredBookings = bookings.filter(booking => {
@@ -87,9 +122,9 @@ console.log(selectedBooking,">>");
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       return (
-        booking.advertiser_name.toLowerCase().includes(term) ||
-        booking.screen_name.toLowerCase().includes(term) ||
-        booking.location.toLowerCase().includes(term)
+        booking.advertiser_name?.toLowerCase().includes(term) ||
+        booking.screen_name?.toLowerCase().includes(term) ||
+        booking.location?.toLowerCase().includes(term)
       );
     }
     return true;
@@ -110,25 +145,50 @@ console.log(selectedBooking,">>");
   });
 
   // Status configuration
-  const statusConfig = {
-    pending: { color: '#FFA500', icon: <FaHourglassHalf />, label: 'Pending' },
-    confirmed: { color: '#28A745', icon: <FaCheckCircle />, label: 'Confirmed' },
-    cancelled: { color: '#DC3545', icon: <FaTimesCircle />, label: 'Cancelled' },
-    playing: { color: '#17A2B8', icon: <FaPlayCircle />, label: 'Live Now' },
-    completed: { color: '#6C757D', icon: <FaCheckCircle />, label: 'Completed' },
-    expired: { color: '#6C757D', icon: <FaExclamationCircle />, label: 'Expired' }
-  };
+const statusConfig = {
+  pending: {
+    color: 'bg-amber-500',
+    icon: <FaHourglassHalf />,
+    label: 'Pending'
+  },
+  confirmed: {
+    color: 'bg-emerald-500',
+    icon: <FaCheckCircle />,
+    label: 'Confirmed'
+  },
+  cancelled: {
+    color: 'bg-rose-500',
+    icon: <FaTimesCircle />,
+    label: 'Cancelled'
+  },
+  playing: {
+    color: 'bg-blue-500',
+    icon: <FaPlayCircle />,
+    label: 'Live Now'
+  },
+  completed: {
+    color: 'bg-slate-500',
+    icon: <FaCheckCircle />,
+    label: 'Completed'
+  },
+  expired: {
+    color: 'bg-slate-600',
+    icon: <FaExclamationCircle />,
+    label: 'Expired'
+  },
+  rejected: {
+    color: 'bg-red-600',
+    icon: <FaTimesCircle />,
+    label: 'Rejected'
+  }
+};
 
   // Payment status configuration
   const paymentConfig = {
-    pending: { color: '#FFA500', label: 'Payment Pending' },
-    paid: { color: '#28A745', label: 'Paid' },
-    failed: { color: '#DC3545', label: 'Payment Failed' },
-    refunded: { color: '#6C757D', label: 'Refunded' }
-  };
-
-  const handlePayment = (bookingId) => {
-    alert(`Proceed to payment for booking ${bookingId}`);
+    pending: { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', label: 'Payment Pending' },
+    paid: { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', label: 'Paid' },
+    failed: { color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20', label: 'Payment Failed' },
+    refunded: { color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/20', label: 'Refunded' }
   };
 
   const handleViewDetails = (booking) => {
@@ -144,12 +204,11 @@ console.log(selectedBooking,">>");
     if (videoRef.current) {
       videoRef.current.pause();
     }
-    clearInterval(progressIntervalRef.current);
   };
 
   const nextMedia = () => {
     if (selectedBooking && selectedBooking.adfiles) {
-      setCurrentMediaIndex((prevIndex) => 
+      setCurrentMediaIndex((prevIndex) =>
         prevIndex === selectedBooking.adfiles.length - 1 ? 0 : prevIndex + 1
       );
     }
@@ -157,28 +216,26 @@ console.log(selectedBooking,">>");
 
   const prevMedia = () => {
     if (selectedBooking && selectedBooking.adfiles) {
-      setCurrentMediaIndex((prevIndex) => 
+      setCurrentMediaIndex((prevIndex) =>
         prevIndex === 0 ? selectedBooking.adfiles.length - 1 : prevIndex - 1
       );
     }
   };
 
   const togglePlayPause = () => {
-    if (currentMedia.type === 'video') {
-      if (videoRef.current) {
-        if (isPlaying) {
-          videoRef.current.pause();
-        } else {
-          videoRef.current.play();
-        }
-        setIsPlaying(!isPlaying);
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
       }
+      setIsPlaying(!isPlaying);
     }
   };
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      mediaContainerRef.current?.requestFullscreen();
+    if (!document.fullscreenElement && mediaContainerRef.current) {
+      mediaContainerRef.current.requestFullscreen();
       setIsFullscreen(true);
     } else {
       document.exitFullscreen();
@@ -194,7 +251,7 @@ console.log(selectedBooking,">>");
   };
 
   const handleProgressClick = (e) => {
-    if (videoRef.current && currentMedia.type === 'video') {
+    if (videoRef.current) {
       const rect = e.currentTarget.getBoundingClientRect();
       const pos = (e.clientX - rect.left) / rect.width;
       videoRef.current.currentTime = pos * mediaDuration;
@@ -216,37 +273,29 @@ console.log(selectedBooking,">>");
     });
   };
 
-  const formatDateTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   const formatTimeOnly = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString('en-IN', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: true
     });
   };
 
   // Media progress tracking
   useEffect(() => {
     if (selectedBooking && selectedBooking.adfiles) {
-      const currentMedia = selectedBooking.adfiles[currentMediaIndex];
-      
-      if (currentMedia.type === 'video' && videoRef.current) {
+      const mediaUrl = selectedBooking.adfiles[currentMediaIndex];
+      const ext = mediaUrl?.split(".").pop()?.toLowerCase();
+      const isVideo = ["mp4", "webm", "ogg", "mov"].includes(ext);
+
+      if (isVideo && videoRef.current) {
         const video = videoRef.current;
-        
+
         const updateProgress = () => {
           setMediaCurrentTime(video.currentTime);
-          setMediaDuration(video.duration);
-          setMediaProgress((video.currentTime / video.duration) * 100);
+          setMediaDuration(video.duration || 0);
+          setMediaProgress(video.duration ? (video.currentTime / video.duration) * 100 : 0);
         };
 
         video.addEventListener('timeupdate', updateProgress);
@@ -260,9 +309,8 @@ console.log(selectedBooking,">>");
 
         return () => {
           video.removeEventListener('timeupdate', updateProgress);
-          video.removeEventListener('loadedmetadata', () => {});
         };
-      } else if (currentMedia.type === 'image') {
+      } else if (!isVideo) {
         // Auto-advance images after 5 seconds
         const timer = setTimeout(() => {
           if (selectedBooking.adfiles.length > 1) {
@@ -275,499 +323,696 @@ console.log(selectedBooking,">>");
     }
   }, [currentMediaIndex, selectedBooking, isPlaying]);
 
-  const currentMedia = selectedBooking?.adfiles?.[currentMediaIndex];
+  const UpdateHandler = async (id, status,path) => {
+    if (!usertoken) return;
 
-  return (
-    <div className="slot-bookings-container">
-      {/* Header */}
-      <header className="bookings-header">
-        <div className="header-content">
-          <h1><FaCalendarAlt /> Slot Bookings</h1>
-          <p className="subtitle">Manage and track your advertising slot bookings</p>
-        </div>
-        <div className="stats-summary">
-          <div className="stat-card">
-            <span className="stat-number">{bookings.length}</span>
-            <span className="stat-label">Total Bookings</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-number">{bookings.filter(b => b.approved).length}</span>
-            <span className="stat-label">Approved</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-number">{bookings.filter(b => b.booking_status === 'playing').length}</span>
-            <span className="stat-label">Live Now</span>
-          </div>
-        </div>
-      </header>
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}${path}/${id}/${status}`, {},
+        {
+          headers: {
+            Authorization: usertoken
+          }
+        }
+      );
 
-      {/* Controls Section */}
-      <div className="controls-section">
-        <div className="search-bar">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search by advertiser, screen, or location..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
+      const { data } = response;
+      notify(data.msg, data.status);
 
-        <div className="filters-container">
-          <div className="filter-group">
-            <FaFilter className="filter-icon" />
-            <select 
-              value={filter} 
-              onChange={(e) => setFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="playing">Live Now</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="expired">Expired</option>
-            </select>
-          </div>
+      if (data.status === 1 && user && usertoken) {
+        getBooking(user, usertoken);
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to save AdScreen';
+      notify(errorMessage, 0);
+    }
+  };
 
-          <div className="filter-group">
-            <FaSort className="filter-icon" />
-            <select 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-              className="filter-select"
-            >
-              <option value="date">Sort by Date</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="price-low">Price: Low to High</option>
-            </select>
-          </div>
+  // Loading Component
+  const LoadingSpinner = () => (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-900/90 backdrop-blur-sm">
+      <div className="relative">
+        <FaSpinner className="h-16 w-16 animate-spin text-blue-500" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-12 w-12 rounded-full border-4 border-transparent border-t-blue-300 animate-spin" />
         </div>
       </div>
+      <p className="mt-6 text-lg font-medium text-white">Loading Bookings...</p>
+      <p className="mt-2 text-sm text-gray-400">Please wait while we fetch your bookings</p>
+    </div>
+  );
 
-      {/* Bookings Grid */}
-      <div className="bookings-grid">
-        {sortedBookings.length > 0 ? (
-          sortedBookings.map((booking) => {
-            const status = statusConfig[booking.booking_status];
-            const paymentStatus = paymentConfig[booking.payment_status];
-            
-            return (
-              <div 
-                key={booking.id} 
-                className={`booking-card ${!booking.approved ? 'not-approved' : ''}`}
-              >
-                {/* Card Header */}
-                <div className="card-header">
-                  <div className="booking-id">
-                    <span className="booking-badge">#{booking.id}</span>
+  // Loading Skeleton for Stats Cards
+  const StatsSkeleton = () => (
+    <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
+      {[...Array(6)].map((_, idx) => (
+        <div key={idx} className="rounded-xl border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm">
+          <div className="h-7 w-12 animate-pulse rounded-lg bg-gray-700"></div>
+          <div className="mt-2 h-4 w-16 animate-pulse rounded bg-gray-800"></div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Loading Skeleton for Booking Cards
+  const BookingCardsSkeleton = () => (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {[...Array(8)].map((_, idx) => (
+        <div key={idx} className="group relative overflow-hidden rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-950/50 p-4 backdrop-blur-sm">
+          {/* Skeleton header */}
+          <div className="relative">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="h-6 w-16 animate-pulse rounded-full bg-gray-800"></div>
+                <div className="mt-2 h-7 w-24 animate-pulse rounded-full bg-gray-800"></div>
+              </div>
+              <div className="h-6 w-24 animate-pulse rounded-full bg-gray-800"></div>
+            </div>
+
+            {/* Skeleton content */}
+            <div className="mt-4">
+              <div className="mb-3 h-6 w-3/4 animate-pulse rounded bg-gray-800"></div>
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="h-10 w-10 animate-pulse rounded-lg bg-gray-800"></div>
+                    <div className="flex-1">
+                      <div className="h-3 w-16 animate-pulse rounded bg-gray-800"></div>
+                      <div className="mt-1 h-4 w-32 animate-pulse rounded bg-gray-800"></div>
+                    </div>
                   </div>
-                  <div className="status-badge" style={{ backgroundColor: status.color }}>
-                    {status.icon}
-                    <span>{status.label}</span>
-                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-center justify-between rounded-lg bg-gradient-to-r from-gray-800/50 to-gray-900/50 p-3">
+                <div>
+                  <div className="h-3 w-12 animate-pulse rounded bg-gray-800"></div>
+                  <div className="mt-1 h-7 w-20 animate-pulse rounded bg-gray-800"></div>
                 </div>
-
-                {/* Card Content */}
-                <div className="card-content">
-                  <div className="booking-info">
-                    <h3 className="advertiser-name">{booking.advertiser_name}</h3>
-                    
-                    <div className="info-row">
-                      <MdScreenShare className="info-icon" />
-                      <span className="info-text">{booking.screen_name}</span>
-                    </div>
-                    
-                    <div className="info-row">
-                      <MdLocationOn className="info-icon" />
-                      <span className="info-text">{booking.location}</span>
-                    </div>
-                    
-                    <div className="info-row">
-                      <FaCalendarAlt className="info-icon" />
-                      <span className="info-text">
-                        {formatDate(booking.start_datetime)} • {formatTimeOnly(booking.start_datetime)} - {formatTimeOnly(booking.end_datetime)}
-                      </span>
-                    </div>
-                    
-                    <div className="info-row">
-                      <FaClock className="info-icon" />
-                      <span className="info-text">{booking.duration_minutes} minutes</span>
-                    </div>
-
-                    {/* Ad Files Preview */}
-                    <div className="adfiles-preview">
-                      <div className="adfiles-count">
-                        <FaFile className="info-icon" />
-                        <span className="info-text">
-                          {booking.adfiles.length} Ad {booking.adfiles.length === 1 ? 'File' : 'Files'}
-                        </span>
-                      </div>
-                      <div className="file-types">
-                        {booking.adfiles.slice(0, 3).map((file, idx) => (
-                          <span key={idx} className="file-type-badge">
-                            {file.type === 'video' ? <FaVideo /> : <FaImage />}
-                            {file.type}
-                          </span>
-                        ))}
-                        {booking.adfiles.length > 3 && (
-                          <span className="file-type-badge">+{booking.adfiles.length - 3}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Price and Payment Section */}
-                  <div className="price-section">
-                    <div className="price-display">
-                      <FaRupeeSign className="currency-icon" />
-                      <span className="price-amount">{booking.price.toLocaleString('en-IN')}</span>
-                      <span className="currency">{booking.currency}</span>
-                    </div>
-                    
-                    <div className="payment-status" style={{ color: paymentStatus.color }}>
-                      {paymentStatus.label}
-                    </div>
-                    
-                    {booking.transaction_id && (
-                      <div className="transaction-id">
-                        Txn ID: {booking.transaction_id}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="card-actions">
-                  <button 
-                    className="btn-view"
-                    onClick={() => handleViewDetails(booking)}
-                  >
-                    <FaEye />
-                    <span>View Details</span>
-                  </button>
-                  
-                  <button className="btn-download">
-                    <FaDownload />
-                    <span>Assets</span>
-                  </button>
-                  
-                  <button
-                    className={`btn-pay ${booking.approved ? 'approved' : 'not-approved-btn'}`}
-                    onClick={() => booking.approved && handlePayment(booking.id)}
-                    disabled={!booking.approved}
-                    title={booking.approved ? "Proceed to Payment" : "Awaiting Approval"}
-                  >
-                    <FaCreditCard />
-                    <span>{booking.payment_status === 'paid' ? 'View Invoice' : 'Pay Now'}</span>
-                  </button>
-                </div>
-
-                {/* Approval Badge */}
-                <div className="approval-badge">
-                  {booking.approved ? (
-                    <span className="approved-badge">
-                      <FaCheckCircle /> Approved
-                    </span>
-                  ) : (
-                    <span className="pending-approval-badge">
-                      <FaHourglassHalf /> Pending Approval
-                    </span>
-                  )}
+                <div>
+                  <div className="h-3 w-16 animate-pulse rounded bg-gray-800"></div>
+                  <div className="mt-1 h-4 w-20 animate-pulse rounded bg-gray-800"></div>
                 </div>
               </div>
-            );
-          })
+            </div>
+
+            {/* Skeleton buttons */}
+            <div className="mt-6 flex gap-2">
+              <div className="flex-1 h-10 animate-pulse rounded-lg bg-gray-800"></div>
+              <div className="w-20 h-10 animate-pulse rounded-lg bg-gray-800"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 p-3 md:p-6 relative">
+      {/* Loading Overlay */}
+      {loading && <LoadingSpinner />}
+
+      {/* Header */}
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="flex items-center gap-3 text-2xl md:text-3xl font-bold text-white">
+              <div className="rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 p-2">
+                <FaCalendarAlt className="text-white text-xl" />
+              </div>
+              Slot Bookings
+              {loading && (
+                <FaSpinner className="ml-2 animate-spin text-blue-400 text-lg" />
+              )}
+            </h1>
+            <p className="mt-2 text-sm text-gray-400">
+              {loading ? "Fetching your bookings..." : "Manage and track your advertising slot bookings"}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 md:flex">
+              <FaChartLine />
+              Analytics
+            </button>
+            <button className="flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-gray-800">
+              <FaDownload />
+              Export
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Cards - Show skeleton when loading */}
+        {loading ? (
+          <StatsSkeleton />
         ) : (
-          <div className="no-results">
-            <FaExclamationCircle />
-            <h3>No bookings found</h3>
-            <p>Try adjusting your filters or search term</p>
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
+            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-white">{bookings.length}</div>
+              <div className="mt-1 text-xs text-gray-400">Total Bookings</div>
+            </div>
+            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-emerald-400">
+                {bookings.filter(b => b.approved).length}
+              </div>
+              <div className="mt-1 text-xs text-gray-400">Approved</div>
+            </div>
+            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-blue-400">
+                {bookings.filter(b => b.booking_status === 'playing').length}
+              </div>
+              <div className="mt-1 text-xs text-gray-400">Live Now</div>
+            </div>
+            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-amber-400">
+                {bookings.filter(b => b.booking_status === 'pending').length}
+              </div>
+              <div className="mt-1 text-xs text-gray-400">Pending</div>
+            </div>
+            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-slate-400">
+                {bookings.filter(b => b.booking_status === 'completed').length}
+              </div>
+              <div className="mt-1 text-xs text-gray-400">Completed</div>
+            </div>
+            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-rose-400">
+                {bookings.filter(b => b.booking_status === 'cancelled').length}
+              </div>
+              <div className="mt-1 text-xs text-gray-400">Cancelled</div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Details Modal */}
-{selectedBooking && (
-  <div className="details-modal-overlay">
-    <div className="details-modal">
-      {/* Modal Header */}
-      <div className="modal-header">
-        <div className="modal-header-left">
-          <h2>
-            <FaEye /> Media Viewer
-          </h2>
-          <div className="booking-info-header">
-            <span className="advertiser-name-header">{selectedBooking.advertiser_name}</span>
-            <span className="booking-id-badge">#{selectedBooking.id}</span>
+      {/* Controls Section */}
+      <div className="mb-6 rounded-xl border border-gray-800 bg-gray-900/30 p-4 backdrop-blur-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search by advertiser, screen, or location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-lg border border-gray-700 bg-gray-800/50 py-3 pl-12 pr-4 text-white placeholder-gray-500 backdrop-blur-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            />
           </div>
-        </div>
-        <button className="close-modal" onClick={closeDetails}>
-          <FaTimes />
-        </button>
-      </div>
 
-      <div className="modal-content">
-        {/* Main Media Display Section */}
-        <div className="media-display-section">
-          <div className="media-player-container" ref={mediaContainerRef}>
-            {(() => {
-              // Get current media URL
-              const currentMediaUrl = selectedBooking.adfiles[currentMediaIndex];
-              
-              // Determine file type from URL
-              const getFileType = (url) => {
-                if (!url) return 'unknown';
-                const extension = url.split('.').pop().toLowerCase().split('?')[0];
-                const videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv', 'flv', 'mkv'];
-                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
-                
-                if (videoExtensions.includes(extension)) return 'video';
-                if (imageExtensions.includes(extension)) return 'image';
-                return 'unknown';
-              };
-              
-              const fileType = getFileType(currentMediaUrl);
-              const fileName = currentMediaUrl ? currentMediaUrl.split('/').pop() : 'Media File';
-              
-              if (fileType === 'video') {
-                return (
-                  <div className="video-player-wrapper">
-                    <video
-                      ref={videoRef}
-                      src={currentMediaUrl}
-                      className="main-media-element"
-                      autoPlay={isPlaying}
-                      muted={isMuted}
-                      loop
-                      playsInline
-                      onError={(e) => console.error('Video load error:', e)}
-                    />
-                    <div className="video-controls-overlay">
-                      <div className="controls-top">
-                      
-                        <span className="media-counter">
-                          {currentMediaIndex + 1} / {selectedBooking.adfiles.length}
-                        </span>
-                      </div>
-                      
-                      <div className="controls-center">
-                        <button className="control-btn-large prev-btn" onClick={prevMedia}>
-                          <FaChevronLeft />
-                        </button>
-                        
-                        <button className="play-pause-btn" onClick={togglePlayPause}>
-                          {isPlaying ? <FaPause /> : <FaPlay />}
-                        </button>
-                        
-                        <button className="control-btn-large next-btn" onClick={nextMedia}>
-                          <FaChevronRight />
-                        </button>
-                      </div>
-                      
-                      <div className="controls-bottom">
-                        <div className="progress-section">
-                          <div className="progress-bar" onClick={handleProgressClick}>
-                            <div 
-                              className="progress-fill" 
-                              style={{ width: `${mediaProgress}%` }}
-                            />
-                          </div>
-                          <span className="time-display">
-                            {formatTime(mediaCurrentTime)} / {formatTime(mediaDuration)}
-                          </span>
-                        </div>
-                        
-                        <div className="right-controls">
-                          <button className="control-btn" onClick={toggleMute}>
-                            {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
-                          </button>
-                          <button className="control-btn" onClick={toggleFullscreen}>
-                            {isFullscreen ? <FaCompress /> : <FaExpand />}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              } else if (fileType === 'image') {
-                return (
-                  <div className="image-viewer-wrapper">
-                    <img 
-                      src={currentMediaUrl} 
-                      alt={fileName} 
-                      className="main-media-element"
-                      onError={(e) => {
-                        console.error('Image load error:', e);
-                        e.target.src = 'https://via.placeholder.com/800x600?text=Image+Not+Available';
-                      }}
-                    />
-                    <div className="image-controls-overlay">
-                      <div className="controls-top">
-                        <span className="media-info">
-                          <FaImage /> {fileName}
-                        </span>
-                        <span className="media-counter">
-                          {currentMediaIndex + 1} / {selectedBooking.adfiles.length}
-                        </span>
-                      </div>
-                      
-                      <div className="image-nav-controls">
-                        <button className="nav-btn prev-btn" onClick={prevMedia}>
-                          <FaChevronLeft />
-                        </button>
-                        <div className="auto-advance-info">
-                          <span className="advance-timer">
-                            Auto advances in: {5}s
-                          </span>
-                        </div>
-                        <button className="nav-btn next-btn" onClick={nextMedia}>
-                          <FaChevronRight />
-                        </button>
-                      </div>
-                      
-                      <div className="fullscreen-control">
-                        <button className="control-btn" onClick={toggleFullscreen}>
-                          {isFullscreen ? <FaCompress /> : <FaExpand />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              } else {
-                return (
-                  <div className="unknown-file-wrapper">
-                    <div className="unknown-file-content">
-                      <FaFile className="unknown-icon" />
-                      <h3>Unsupported File Type</h3>
-                      <p>This file cannot be previewed in the browser.</p>
-                      <a 
-                        href={currentMediaUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="download-file-btn"
-                      >
-                        <FaDownload /> Download File
-                      </a>
-                    </div>
-                  </div>
-                );
-              }
-            })()}
+          {/* Mobile Filters Toggle */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center justify-center gap-2 rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-3 text-white md:hidden"
+          >
+            <FaFilter />
+            Filters
+            <FaCaretDown className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+          </button>
 
-            {/* QR Code Section - Side by side with thumbnails on desktop */}
-            <div className="qr-thumbnail-container">
-              {/* Thumbnails */}
-              <div className="thumbnail-section">
-                <h4 className="thumbnail-title">Media Files</h4>
-                <div className="thumbnail-grid">
-                  {selectedBooking.adfiles.map((fileUrl, index) => {
-                    const getFileType = (url) => {
-                      if (!url) return 'unknown';
-                      const extension = url.split('.').pop().toLowerCase().split('?')[0];
-                      const videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv', 'flv', 'mkv'];
-                      const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
-                      
-                      if (videoExtensions.includes(extension)) return 'video';
-                      if (imageExtensions.includes(extension)) return 'image';
-                      return 'unknown';
-                    };
-                    
-                    const fileType = getFileType(fileUrl);
-                    const fileName = fileUrl.split('/').pop();
-                    
-                    return (
-                      <div
-                        key={index}
-                        className={`thumbnail-item ${index === currentMediaIndex ? 'active' : ''}`}
-                        onClick={() => setCurrentMediaIndex(index)}
-                      >
-                        <div className="thumbnail-preview">
-                          {fileType === 'video' ? (
-                            <div className="video-thumbnail">
-                              <FaVideo className="thumbnail-icon" />
-                              <div className="play-overlay">
-                                <FaPlay />
-                              </div>
-                            </div>
-                          ) : fileType === 'image' ? (
-                            <div className="image-thumbnail">
-                              <img 
-                                src={fileUrl} 
-                                alt={`Thumbnail ${index + 1}`}
-                                loading="lazy"
-                                onError={(e) => {
-                                  e.target.src = 'https://via.placeholder.com/100x75?text=Image';
-                                }}
-                              />
-                              <FaImage className="thumbnail-icon" />
-                            </div>
-                          ) : (
-                            <div className="unknown-thumbnail">
-                              <FaFile className="thumbnail-icon" />
-                            </div>
-                          )}
-                        </div>
-                        <span className="thumbnail-label">
-                          {fileName.length > 20 ? fileName.substring(0, 17) + '...' : fileName}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+          {/* Desktop Filters */}
+          <div className="hidden items-center gap-4 md:flex">
+            <div className="relative">
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="appearance-none rounded-lg border border-gray-700 bg-gray-800/50 py-2.5 pl-4 pr-10 text-white backdrop-blur-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="playing">Live Now</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="expired">Expired</option>
+              </select>
+              <FaFilter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            </div>
 
-              {/* QR Code Section */}
-              {selectedBooking.qrcode && (
-                <div className="qr-code-section">
-                  <h4 className="qr-title">
-                    <FaQrcode /> Campaign QR Code
-                  </h4>
-                  <div className="qr-code-wrapper">
-                    <img 
-                      src={selectedBooking.qrcode} 
-                      alt="Campaign QR Code" 
-                      className="qr-code-image"
-                      onError={(e) => {
-                        e.target.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(selectedBooking.redirectlink || 'https://example.com');
-                      }}
-                    />
-                    <div className="qr-info">
-                      <p className="qr-description">
-                        Scan this QR code to visit the campaign page
-                      </p>
-                      {selectedBooking.redirectlink && (
-                        <a 
-                          href={selectedBooking.redirectlink} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="qr-link-btn"
-                        >
-                          <FaExternalLinkAlt />
-                          <span>Open Link Directly</span>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="appearance-none rounded-lg border border-gray-700 bg-gray-800/50 py-2.5 pl-4 pr-10 text-white backdrop-blur-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              >
+                <option value="date">Sort by Date</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="price-low">Price: Low to High</option>
+              </select>
+              <FaSort className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" />
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
 
-   
+        {/* Mobile Filters Dropdown */}
+        {showFilters && (
+          <div className="mt-4 grid grid-cols-2 gap-3 md:hidden">
+            <div>
+              <label className="mb-1 block text-sm text-gray-400">Status</label>
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-3 py-2 text-white"
+              >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="playing">Live Now</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="expired">Expired</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-gray-400">Sort By</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-3 py-2 text-white"
+              >
+                <option value="date">Sort by Date</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="price-low">Price: Low to High</option>
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bookings Grid - Show skeleton when loading */}
+      {loading ? (
+        <BookingCardsSkeleton />
+      ) : sortedBookings.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {sortedBookings?.map((booking) => {
+            const status = statusConfig[booking.booking_status] || statusConfig.pending;
+            const paymentStatus = paymentConfig[booking.payment_status] || paymentConfig.pending;
+
+            return (
+              <div
+                key={booking._id}
+                className="group relative overflow-hidden rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900/50 to-gray-950/50 p-4 backdrop-blur-sm transition-all hover:border-gray-700 hover:shadow-xl hover:shadow-blue-500/5"
+              >
+                {/* Corner Status Indicator */}
+                <div className={`absolute right-0 top-0 h-2 w-full ${status.color}`} />
+
+                <div className="relative">
+                  {/* Card Header */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="rounded-full bg-gray-800 px-3 py-1 text-xs font-medium text-gray-300">
+                        #{booking.id}
+                      </span>
+                      <div className="mt-2 flex items-center gap-2">
+                        <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-white ${status.color}`}>
+                          {status.icon}
+                          {status.label}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className={`text-xs rounded-full px-3 py-1 ${paymentStatus.bg} ${paymentStatus.border} border ${paymentStatus.color}`}>
+                      {paymentStatus.label}
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="mt-4">
+                    <h3 className="mb-3 line-clamp-1 text-lg font-semibold text-white">
+                      {booking.advertiser_name}
+                    </h3>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-gray-800 p-2">
+                          <MdScreenShare className="text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-400">Screen</p>
+                          <p className="font-medium text-white">{booking.screen_name}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-gray-800 p-2">
+                          <MdLocationOn className="text-emerald-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-400">Location</p>
+                          <p className="font-medium text-white">{booking.location}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-gray-800 p-2">
+                          <FaCalendarAlt className="text-amber-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-400">Schedule</p>
+                          <p className="font-medium text-white">
+                            {formatDate(booking.start_datetime)} • {formatTimeOnly(booking.start_datetime)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Ad Files Preview */}
+                      <div className="rounded-lg bg-gray-800/50 p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FaFile className="text-gray-400" />
+                            <span className="text-sm text-gray-400">
+                              {booking.adfiles?.length || 0} Ad Files
+                            </span>
+                          </div>
+                          <div className="flex -space-x-2">
+                            {booking.adfiles?.slice(0, 3).map((file, idx) => {
+                              const ext = file?.split(".").pop()?.toLowerCase();
+                              const isVideo = ["mp4", "webm", "ogg", "mov"].includes(ext);
+                              return (
+                                <div key={idx} className="rounded-full border-2 border-gray-900 bg-gray-700 p-1.5">
+                                  {isVideo ? (
+                                    <FaVideo className="text-xs text-blue-400" />
+                                  ) : (
+                                    <FaImage className="text-xs text-emerald-400" />
+                                  )}
+                                </div>
+                              );
+                            })}
+                            {booking.adfiles?.length > 3 && (
+                              <div className="rounded-full border-2 border-gray-900 bg-gray-700 px-2 py-1 text-xs text-gray-300">
+                                +{booking.adfiles.length - 3}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Price and Duration */}
+                    <div className="mt-4 flex items-center justify-between rounded-lg bg-gradient-to-r from-gray-800/50 to-gray-900/50 p-3">
+                      <div>
+                        <p className="text-sm text-gray-400">Price</p>
+                        <div className="flex items-center gap-1">
+                          <FaRupeeSign className="text-gray-300" />
+                          <span className="text-xl font-bold text-white">
+                            {booking.price?.toLocaleString('en-IN')}
+                          </span>
+                          <span className="text-gray-400">{booking.currency}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-400">Duration</p>
+                        <div className="flex items-center gap-2">
+                          <FaClock className="text-blue-400" />
+                          <span className="font-medium text-white">
+                            {booking.duration_minutes} mins
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="mt-6 flex gap-2">
+                    <button
+                      onClick={() => handleViewDetails(booking)}
+                      className="flex-1 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:shadow-blue-500/25"
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        <FaEye />
+                        View Details
+                      </span>
+                    </button>
+
+                    {user?.role == "advertiser" ? (
+                      <button
+                        disabled={!booking?.approved || !booking?.booking_status=="rejected"}
+                        className="rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-white transition-all
+                                   hover:bg-gray-800
+                                   disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-gray-800/50"
+                      >
+                        Pay Now
+                      </button>
+                    ) : (
+                      <div className='flex gap-1 flex-wrap'>
+                        <button
+                          disabled={booking?.approved || booking?.booking_status=="rejected"}
+                          onClick={() => { UpdateHandler(booking?._id, true,"bookingapprovel") }}
+                          className="rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-white transition-all
+                                   hover:bg-gray-800
+                                   disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-gray-800/50"
+                        >
+                          Accept
+                        </button>
+                        <button
+
+                          disabled={booking?.approved || booking?.booking_status=="rejected"}
+
+                            onClick={() => { UpdateHandler(booking?._id, "rejected","bookingStatusUpdate") }}
+
+
+                          className="rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-white transition-all
+                                   hover:bg-gray-800
+                                   disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-gray-800/50"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Approval Badge */}
+                  <div className="mt-4">
+                    {booking.approved ? (
+                      <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400">
+                        <FaCheckCircle />
+                        Approved
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs text-amber-400">
+                        <FaHourglassHalf />
+                        Pending Approval
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="col-span-full rounded-2xl border border-dashed border-gray-800 bg-gray-900/20 p-12 text-center">
+          <div className="mx-auto max-w-md">
+            <FaExclamationCircle className="mx-auto text-4xl text-gray-600" />
+            <h3 className="mt-4 text-xl font-semibold text-white">No bookings found</h3>
+            <p className="mt-2 text-gray-400">
+              Try adjusting your filters or search term to find what you're looking for.
+            </p>
+            <button
+              onClick={() => { setFilter('all'); setSearchTerm(''); }}
+              className="mt-6 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-2.5 font-medium text-white transition-all hover:shadow-lg hover:shadow-blue-500/25"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {selectedBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <div className="flex h-[95vh] w-[96%] max-w-7xl flex-col overflow-hidden rounded-xl bg-zinc-900 text-white">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
+              <div>
+                <h2 className="flex items-center gap-2 text-sm font-semibold">
+                  <FaEye /> Media Viewer
+                </h2>
+                <p className="text-xs text-zinc-400">
+                  {selectedBooking.advertiser_name}
+                  <span className="ml-2 rounded bg-zinc-800 px-2 py-[2px]">
+                    #{selectedBooking.id}
+                  </span>
+                </p>
+              </div>
+
+              <button
+                onClick={closeDetails}
+                className="rounded-full p-2 hover:bg-zinc-800"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex flex-1 flex-col gap-4 overflow-hidden p-3 md:flex-row">
+              {/* Main Media */}
+              <div
+                ref={mediaContainerRef}
+                className="relative flex h-[45vh] flex-1 items-center justify-center overflow-hidden rounded-xl bg-black md:h-full"
+              >
+                {(() => {
+                  const mediaUrl = selectedBooking.adfiles[currentMediaIndex];
+                  const ext = mediaUrl?.split(".").pop()?.toLowerCase();
+                  const isVideo = ["mp4", "webm", "ogg", "mov"].includes(ext);
+                  const isImage = ["jpg", "jpeg", "png", "webp", "gif"].includes(ext);
+
+                  if (isVideo) {
+                    return (
+                      <>
+                        <video
+                          ref={videoRef}
+                          src={mediaUrl}
+                          autoPlay={isPlaying}
+                          muted={isMuted}
+                          loop
+                          playsInline
+                          className="h-full w-full object-contain"
+                        />
+
+                        {/* Controls */}
+                        <div className="absolute inset-0 flex flex-col justify-between bg-black/30">
+                          {/* Top */}
+                          <div className="flex justify-end p-3 text-xs">
+                            {currentMediaIndex + 1} / {selectedBooking.adfiles.length}
+                          </div>
+
+                          {/* Center */}
+                          <div className="flex items-center justify-center gap-6">
+                            <button
+                              onClick={prevMedia}
+                              className="rounded-full bg-black/70 p-3"
+                            >
+                              <FaChevronLeft />
+                            </button>
+
+                            <button
+                              onClick={togglePlayPause}
+                              className="rounded-full bg-black/70 p-4 text-xl"
+                            >
+                              {isPlaying ? <FaPause /> : <FaPlay />}
+                            </button>
+
+                            <button
+                              onClick={nextMedia}
+                              className="rounded-full bg-black/70 p-3"
+                            >
+                              <FaChevronRight />
+                            </button>
+                          </div>
+
+                          {/* Bottom */}
+                          <div className="flex items-center gap-3 p-3">
+                            <div
+                              onClick={handleProgressClick}
+                              className="h-1 flex-1 cursor-pointer rounded bg-zinc-700"
+                            >
+                              <div
+                                className="h-full rounded bg-green-500"
+                                style={{ width: `${mediaProgress}%` }}
+                              />
+                            </div>
+
+                            <span className="text-xs">
+                              {formatTime(mediaCurrentTime)} / {formatTime(mediaDuration)}
+                            </span>
+
+                            <button onClick={toggleMute}>
+                              {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+                            </button>
+
+                            <button onClick={toggleFullscreen}>
+                              {isFullscreen ? <FaCompress /> : <FaExpand />}
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  }
+
+                  if (isImage) {
+                    return (
+                      <img
+                        src={mediaUrl}
+                        alt="Ad"
+                        className="h-full w-full object-contain"
+                      />
+                    );
+                  }
+
+                  return (
+                    <div className="text-center text-zinc-400">
+                      <FaFile className="mx-auto mb-2 text-3xl" />
+                      <p className="text-sm">Unsupported file</p>
+                      <a
+                        href={mediaUrl}
+                        target="_blank"
+                        className="mt-2 inline-block rounded bg-green-500 px-4 py-2 text-black"
+                      >
+                        Download
+                      </a>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Right Panel */}
+              <div className="flex w-full flex-col gap-4 md:w-[320px]">
+                {/* Thumbnails */}
+                <div className="rounded-xl bg-zinc-800 p-3">
+                  <h4 className="mb-2 text-xs font-semibold">Ad Files</h4>
+                  <div className="flex gap-3 overflow-x-auto md:grid md:grid-cols-3">
+                    {selectedBooking.adfiles.map((file, index) => (
+                      <div
+                        key={index}
+                        onClick={() => setCurrentMediaIndex(index)}
+                        className={`min-w-[80px] cursor-pointer rounded-lg p-1 ${index === currentMediaIndex
+                            ? "ring-2 ring-green-500"
+                            : "bg-zinc-700"
+                          }`}
+                      >
+                        <img
+                          src={file}
+                          className="h-16 w-full rounded object-cover"
+                        />
+                        <p className="mt-1 truncate text-[10px]">
+                          {file.split("/").pop()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* QR CODE */}
+                {selectedBooking.qrcode && (
+                  <div className="rounded-xl bg-zinc-800 p-4 text-center">
+                    <h4 className="mb-2 flex items-center justify-center gap-2 text-xs font-semibold">
+                      <FaQrcode /> Campaign QR
+                    </h4>
+                    <img
+                      src={selectedBooking.qrcode}
+                      className="mx-auto h-36 w-36 rounded bg-white p-2"
+                    />
+                    <p className="mt-2 text-xs text-zinc-400">
+                      Scan to visit campaign
+                    </p>
+                    {selectedBooking.redirectlink && (
+                      <a
+                        href={selectedBooking.redirectlink}
+                        target="_blank"
+                        className="mt-2 inline-flex items-center gap-1 text-xs text-green-500"
+                      >
+                        <FaExternalLinkAlt /> Open Link
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-
 export default BookingList;
-
-
-
