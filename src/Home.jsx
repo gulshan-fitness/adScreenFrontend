@@ -6,7 +6,9 @@ import TopBar from "./TopBar/TopBar";
 import Footer from "./TopBar/Footer";
 
 
+
 export default function Home() {
+
   const {  } = useContext(Context);
 
   return (
@@ -15,6 +17,7 @@ export default function Home() {
     <TopBar/>
 
 <Outlet/>
+
 
 <Footer/>
 

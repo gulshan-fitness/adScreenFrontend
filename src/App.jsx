@@ -53,7 +53,7 @@ import Wallet from "./User/Wallet";
 import SlotCreationComponent from "./User/SlotCreationForm";
 import SlotBooking from "./User/SlotBooking";
 import MyBookingsPage from "./SlotBooking/BookingList";
-import PaymentSuccess from "./Payment/PaymentSuccess";
+
 
 
 function App() {
@@ -273,10 +273,7 @@ function App() {
     },
 
 
-        {
-      path: "paymentsuccess",
-      element: <PaymentSuccess />
-    },
+ 
     // {
     //   path: "campaigns",
     //   element: <MyCampaigns />

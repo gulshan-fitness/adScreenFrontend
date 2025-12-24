@@ -69,6 +69,22 @@ const [MatchistickCounts, setMatchistickCounts] = useState(null);
 
 
 
+
+
+
+
+
+
+
+
+const [PaymentSuccessPopUp, setPaymentSuccessPopUp] = useState(false);
+const [PaymentSuccesdData, setPaymentSuccesdData] = useState(null);
+
+
+
+
+
+
   const notify = (msg, status) => {
     toast(msg, {
       position: "top-right",
@@ -373,6 +389,8 @@ setMatchistickCounts(data)
 
 
 
+
+
   const FetchApi = async (
     baseUrl,
     subPath,
@@ -435,10 +453,11 @@ const getCurrencySymbol = (code = "") => {
 
   
   
-  const BookingdoneHandler = async (transaction_id, Booking_id) => {
+const BookingdoneHandler = async (transaction_id, booking_id) => {
+  if(!usertoken) return
   try {
     const response = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}bookingdone/${Booking_id}/${transaction_id}`,
+      `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}bookingdone/${booking_id}/${transaction_id}`,
       {},
       {
         headers: {
@@ -449,22 +468,64 @@ const getCurrencySymbol = (code = "") => {
 
     const { data } = response;
 
-    if (data.status === 1) {
-      return data
+    if (data?.status === 1) {
+      return { status: 1, data };
     }
 
-    return { state: 0, msg: data?.msg || "Failed" };
-
-
+    return {
+      status: 0,
+      msg: data?.msg || "Failed",
+    };
   } catch (error) {
     const errorMessage =
       error.response?.data?.message || error.message || "Failed";
 
     notify(errorMessage, 0);
 
-    return { status: 0, msg: errorMessage };
+    return {
+      status: 0,
+      msg: errorMessage,
+    };
   }
 };
+
+
+const slotConfirmHandler = async (Slot_id) => {
+    if(!usertoken) return
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}ConfirmSlot/${Slot_id}`,
+      {},
+      {
+        headers: {
+          Authorization: usertoken,
+        },
+      }
+    );
+
+    const { data } = response;
+
+    if (data?.status === 1) {
+      return { status: 1, data };
+    }
+
+    return {
+      status: 0,
+      msg: data?.msg || "Failed",
+    };
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || error.message || "Failed";
+
+    notify(errorMessage, 0);
+
+    return {
+      status: 0,
+      msg: errorMessage,
+    };
+  }
+};
+
 
 
 
@@ -555,7 +616,9 @@ const menu_links = [
 
 
 
-        FetchApi,getCurrencySymbol,BookingdoneHandler
+        FetchApi,getCurrencySymbol,BookingdoneHandler,PaymentSuccessPopUp, setPaymentSuccessPopUp,PaymentSuccesdData, setPaymentSuccesdData,slotConfirmHandler
+
+
       }}
     >
       {props.children}

@@ -71,44 +71,49 @@ const BookingList = () => {
 
 
 
-  useEffect(() => {
-    if (!user?._id || user?.role !== "advertiser") return;
+useEffect(() => {
+  if (!user?._id || user?.role !== "advertiser") return;
 
-    // Connect socket
+  // Connect only if not already connected
+  if (!socket.connected) {
     socket.connect();
+  }
 
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-      // Join backend room
-      socket.emit("JoinBookingRoom", user?._id);
+  const onConnect = () => {
+    console.log("Socket connected:", socket.id);
+    socket.emit("JoinBookingRoom", user._id);
+  };
+
+  const onBookingUpdate = (data) => {
+    setBookings((prev) => {
+      const index = prev.findIndex(item => item?._id === data?._id);
+      if (index === -1) return prev;
+
+      const updated = [...prev];
+      updated[index] = data;
+      return updated;
     });
 
-    // Listen booking updates
-    socket.on("BookingUpdate", (data) => {
-      setBookings((predata) => {
-        const Newarr = [...predata];
-        const index = predata.findIndex(item => item?._id === data?._id);
+    console.log("Booking update:", data);
+  };
 
+  const onDisconnect = () => {
+    console.log("Socket disconnected");
+  };
 
-        if (index !== -1) {
-          Newarr.splice(index, 1, data);
-        }
-        return Newarr;
-      });
-      console.log("Booking update:", data);
-    });
+  socket.on("connect", onConnect);
+  socket.on("BookingUpdate", onBookingUpdate);
+  socket.on("disconnect", onDisconnect);
 
-    socket.on("disconnect", () => {
-      console.log("Socket disconnected");
-    });
+  return () => {
+    socket.off("connect", onConnect);
+    socket.off("BookingUpdate", onBookingUpdate);
+    socket.off("disconnect", onDisconnect);
 
-    return () => {
-      socket.off("connect");
-      socket.off("BookingUpdate");
-      socket.off("disconnect");
-      socket.disconnect();
-    };
-  }, [user]);
+    // ❌ DO NOT disconnect here
+  };
+}, [user?._id]);
+
 
   const getBooking = (user, usertoken) => {
     setLoading(true); // Start loading
