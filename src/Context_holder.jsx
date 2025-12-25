@@ -527,6 +527,49 @@ const slotConfirmHandler = async (Slot_id) => {
 };
 
 
+const bookingDeleteHandler = async (id,oldFiles) => {
+    if(!usertoken ) return
+
+    console.log(id,oldFiles);
+  
+    
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}Deletebookings/${id}`,
+      {oldFiles},
+      {
+        headers: {
+          Authorization: usertoken,
+        },
+      }
+    );
+
+    const { data } = response;
+
+      notify(data.msg, data?.status);
+
+    if (data?.status === 1) {
+      return { status: 1 };
+    }
+
+    return {
+      status: 0,
+      msg: data?.msg || "Failed",
+    };
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || error.message || "Failed";
+
+    notify(errorMessage, 0);
+
+    return {
+      status: 0,
+      msg: errorMessage,
+    };
+  }
+};
+
+
 
 
 const menu_links = [
@@ -616,7 +659,7 @@ const menu_links = [
 
 
 
-        FetchApi,getCurrencySymbol,BookingdoneHandler,PaymentSuccessPopUp, setPaymentSuccessPopUp,PaymentSuccesdData, setPaymentSuccesdData,slotConfirmHandler
+        FetchApi,getCurrencySymbol,BookingdoneHandler,PaymentSuccessPopUp, setPaymentSuccessPopUp,PaymentSuccesdData, setPaymentSuccesdData,slotConfirmHandler,bookingDeleteHandler
 
 
       }}

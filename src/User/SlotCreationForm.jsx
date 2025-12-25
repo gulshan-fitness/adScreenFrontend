@@ -52,7 +52,6 @@ const SlotCreationComponent = () => {
         duration_minutes: 30,
         price: '',
         currency: 'INR',
-        timeFormat: '24h',
         status: 'available',
     });
     
@@ -60,21 +59,17 @@ const SlotCreationComponent = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-
-    
     // Available currencies
-
-const currencies = [
-  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
-  { code: 'USD', symbol: '$', name: 'US Dollar' },
-  { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'GBP', symbol: '£', name: 'British Pound' },
-  { code: 'CAD', symbol: '$', name: 'Canadian Dollar' },
-  { code: 'AUD', symbol: '$', name: 'Australian Dollar' },
-  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
-  { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' }
-];
-
+    const currencies = [
+        { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+        { code: 'USD', symbol: '$', name: 'US Dollar' },
+        { code: 'EUR', symbol: '€', name: 'Euro' },
+        { code: 'GBP', symbol: '£', name: 'British Pound' },
+        { code: 'CAD', symbol: '$', name: 'Canadian Dollar' },
+        { code: 'AUD', symbol: '$', name: 'Australian Dollar' },
+        { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+        { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' }
+    ];
 
     // Fetch screens on component mount
     useEffect(() => {
@@ -175,45 +170,8 @@ const currencies = [
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     };
 
-    // Generate time options based on selected format
-    const generateTimeOptions = () => {
-        const times = [];
-        
-        if (formData.timeFormat === '24h') {
-            for (let hour = 0; hour < 24; hour++) {
-                for (let minute = 0; minute < 60; minute += 30) {
-                    times.push({
-                        value: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
-                        display: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-                    });
-                }
-            }
-        } else {
-            for (let hour = 1; hour <= 12; hour++) {
-                for (let minute = 0; minute < 60; minute += 30) {
-                    const displayHour = hour.toString().padStart(2, '0');
-                    times.push(
-                        {
-                            value: convertTo24Hour(`${displayHour}:${minute.toString().padStart(2, '0')} AM`),
-                            display: `${displayHour}:${minute.toString().padStart(2, '0')} AM`
-                        },
-                        {
-                            value: convertTo24Hour(`${displayHour}:${minute.toString().padStart(2, '0')} PM`),
-                            display: `${displayHour}:${minute.toString().padStart(2, '0')} PM`
-                        }
-                    );
-                }
-            }
-        }
-        
-        return times;
-    };
-
-    // Format time for display based on selected format
+    // Format time for display
     const formatTimeDisplay = (time24) => {
-        if (formData.timeFormat === '24h') {
-            return time24;
-        }
         return convertTo12Hour(time24);
     };
 
@@ -224,14 +182,6 @@ const currencies = [
         const endHours = Math.floor(totalMinutes / 60) % 24;
         const endMinutes = totalMinutes % 60;
         return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
-    };
-
-    // Handle time format change
-    const handleTimeFormatChange = (format) => {
-        setFormData(prev => ({
-            ...prev,
-            timeFormat: format
-        }));
     };
 
     // Handle duration change
@@ -312,79 +262,64 @@ const currencies = [
             return;
         }
 
-
         try {
-
-
             setIsSubmitting(true);
-            
 
- // Combine date and time for start_datetime and end_datetime
- const startDate = new Date(formData.date);
- const [startHour, startMinute] = formData.start_time.split(':');
- startDate.setHours(startHour, startMinute, 0, 0);
+            // Combine date and time for start_datetime and end_datetime
+            const startDate = new Date(formData.date);
+            const [startHour, startMinute] = formData.start_time.split(':');
+            startDate.setHours(startHour, startMinute, 0, 0);
 
- const endDate = new Date(formData.date);
- const [endHour, endMinute] = formData.end_time.split(':');
- endDate.setHours(endHour, endMinute, 0, 0);
+            const endDate = new Date(formData.date);
+            const [endHour, endMinute] = formData.end_time.split(':');
+            endDate.setHours(endHour, endMinute, 0, 0);
 
- const slotData = {
-     screen_id: formData.screen_id,
-     start_datetime: startDate,
-     end_datetime: endDate,
-     date: formData.date,
-     start_time: formData.start_time,
-     end_time: formData.end_time,
-     duration_minutes: formData.duration_minutes,
-     price: formData.price,
-     currency: formData.currency,
-     time_format: formData.timeFormat,
-     status: formData.status
- };
-
-
+            const slotData = {
+                screen_id: formData.screen_id,
+                start_datetime: startDate,
+                end_datetime: endDate,
+                date: formData.date,
+                start_time: formData.start_time,
+                end_time: formData.end_time,
+                duration_minutes: formData.duration_minutes,
+                price: formData.price,
+                currency: formData.currency,
+                status: formData.status
+            };
 
             const response = await axios.post(
-              `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}addslot`,
-              slotData,
-              {
-                headers: {
-                  Authorization: usertoken
+                `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}addslot`,
+                slotData,
+                {
+                    headers: {
+                        Authorization: usertoken
+                    }
                 }
-              }
             );
-      
+
             const { data } = response;
             notify(data.msg, data.status);
             
             if (data.status === 1) {
-                setTimeout(() => {
-                    setFormData({
-                        screen_id: '',
-                        date: new Date(),
-                        start_time: '09:00',
-                        end_time: '09:30',
-                        duration_minutes: 30,
-                        price: '',
-                        currency: 'INR',
-                        timeFormat: '24h',
-                        status: 'available'
-                    });
-                    setSelectedScreen(null);
-                    setStep(1);
-                    setIsFilterOpen(false);
-                }, 2000);
-              
-           
+                setFormData({
+                    screen_id: '',
+                    date: new Date(),
+                    start_time: '09:00',
+                    end_time: '09:30',
+                    duration_minutes: 30,
+                    price: '',
+                    currency: 'INR',
+                    status: 'available'
+                });
+                setSelectedScreen(null);
+                setStep(1);
+                setIsFilterOpen(false);
             }
-          } catch (error) {
-           
-            notify(errorMessage, 0);
-          } finally {
+        } catch (error) {
+            notify(error.message || 'Failed to create slot', 0);
+        } finally {
             setIsSubmitting(false);
-          }
-
-   
+        }
     };
 
     // Helper functions
@@ -430,7 +365,7 @@ const currencies = [
         return icons[type] || '📱';
     };
 
-    const durationOptions = [15, 30, 45, 60, 90, 120, 180, 240];
+    const durationOptions = [0.5, 1, 15, 30, 45, 60, 90, 120, 180, 240];
 
     // Screen Selection Component
     const renderScreenSelection = () => {
@@ -544,191 +479,191 @@ const currencies = [
                         </div>
                     ) : (
                         filteredScreens.map(screen => (
-                          <div 
-  key={screen._id} 
-  className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-200 active:scale-[0.98]"
-  onClick={() => handleScreenSelect(screen)}
->
-  {/* Card Header - More compact on mobile */}
-  <div className="p-3 sm:p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-    <div className="flex justify-between items-start gap-2">
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-        <div className="text-xl sm:text-2xl text-blue-600">
-          {getScreenTypeIcon(screen.screenType)}
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-bold text-gray-800 text-sm sm:text-base truncate">
-            {screen.screenName || 'Digital Screen'}
-          </h3>
-          <div className="flex items-center gap-2 mt-1">
-            <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-              screen.status 
-                ? 'bg-green-100 text-green-800 border border-green-200' 
-                : 'bg-red-100 text-red-800 border border-red-200'
-            }`}>
-              {screen.status ? 'Active' : 'Inactive'}
-            </span>
-            <span className="text-xs text-gray-500 hidden sm:block">
-              ID: {screen._id?.substring(0, 6)}...
-            </span>
-          </div>
-        </div>
-      </div>
-      {screen.basePrice && (
-        <div className="text-right flex-shrink-0">
-          <div className="text-lg sm:text-xl font-bold text-blue-600">
-            {screen.currency || '₹'}{screen.basePrice}
-          </div>
-          <div className="text-xs text-gray-500">per slot</div>
-        </div>
-      )}
-    </div>
-  </div>
+                            <div 
+                                key={screen._id} 
+                                className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-200 active:scale-[0.98]"
+                                onClick={() => handleScreenSelect(screen)}
+                            >
+                                {/* Card Header - More compact on mobile */}
+                                <div className="p-3 sm:p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                                    <div className="flex justify-between items-start gap-2">
+                                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                                            <div className="text-xl sm:text-2xl text-blue-600">
+                                                {getScreenTypeIcon(screen.screenType)}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <h3 className="font-bold text-gray-800 text-sm sm:text-base truncate">
+                                                    {screen.screenName || 'Digital Screen'}
+                                                </h3>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                                                        screen.status 
+                                                            ? 'bg-green-100 text-green-800 border border-green-200' 
+                                                            : 'bg-red-100 text-red-800 border border-red-200'
+                                                    }`}>
+                                                        {screen.status ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500 hidden sm:block">
+                                                        ID: {screen._id?.substring(0, 6)}...
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {screen.basePrice && (
+                                            <div className="text-right flex-shrink-0">
+                                                <div className="text-lg sm:text-xl font-bold text-blue-600">
+                                                    {screen.currency || '₹'}{screen.basePrice}
+                                                </div>
+                                                <div className="text-xs text-gray-500">per slot</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
-  {/* Screen Image */}
-  <div className="relative h-40 sm:h-48 bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
-    {screen.image ? (
-      <img 
-        src={screen.image} 
-        alt={screen.screenName || 'Screen Image'}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        loading="lazy"
-      />
-    ) : (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl sm:text-5xl text-gray-300 mb-2">
-            {getScreenTypeIcon(screen.screenType)}
-          </div>
-          <p className="text-gray-400 text-xs sm:text-sm">Screen Preview</p>
-        </div>
-      </div>
-    )}
-    {/* Floating badges */}
-    <div className="absolute top-2 right-2 flex flex-col gap-1">
-      <div className="bg-white/90 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full text-xs font-medium text-gray-700 shadow-sm">
-        {screen.screenType?.toUpperCase() || 'LCD'}
-      </div>
-      {screen.rating > 0 && (
-        <div className="bg-yellow-100/90 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full text-xs font-bold text-yellow-800 shadow-sm">
-          ⭐ {screen.rating.toFixed(1)}
-        </div>
-      )}
-    </div>
-  </div>
+                                {/* Screen Image */}
+                                <div className="relative h-40 sm:h-48 bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
+                                    {screen.image ? (
+                                        <img 
+                                            src={screen.image} 
+                                            alt={screen.screenName || 'Screen Image'}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <div className="text-center">
+                                                <div className="text-4xl sm:text-5xl text-gray-300 mb-2">
+                                                    {getScreenTypeIcon(screen.screenType)}
+                                                </div>
+                                                <p className="text-gray-400 text-xs sm:text-sm">Screen Preview</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {/* Floating badges */}
+                                    <div className="absolute top-2 right-2 flex flex-col gap-1">
+                                        <div className="bg-white/90 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full text-xs font-medium text-gray-700 shadow-sm">
+                                            {screen.screenType?.toUpperCase() || 'LCD'}
+                                        </div>
+                                        {screen.rating > 0 && (
+                                            <div className="bg-yellow-100/90 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full text-xs font-bold text-yellow-800 shadow-sm">
+                                                ⭐ {screen.rating.toFixed(1)}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
-  {/* Screen Details */}
-  <div className="p-4 sm:p-5">
-    {/* Location Info */}
-    <div className="space-y-3 mb-4">
-      <div className="flex items-start gap-2 text-gray-700">
-        <span className="text-red-500 mt-0.5">📍</span>
-        <div className="flex-1">
-          <div className="font-medium text-sm sm:text-base">
-            {screen.address?.city || 'City'}, {screen.address?.state || 'State'}
-          </div>
-          {screen.address?.street && (
-            <div className="text-xs text-gray-500 truncate mt-1">
-              {screen.address.street}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-2 text-gray-600">
-        <span className="text-blue-500">🏢</span>
-        <span className="text-sm">
-          {getLocationTypeLabel(screen.locationType) || 'Public Space'}
-        </span>
-      </div>
-    </div>
+                                {/* Screen Details */}
+                                <div className="p-4 sm:p-5">
+                                    {/* Location Info */}
+                                    <div className="space-y-3 mb-4">
+                                        <div className="flex items-start gap-2 text-gray-700">
+                                            <span className="text-red-500 mt-0.5">📍</span>
+                                            <div className="flex-1">
+                                                <div className="font-medium text-sm sm:text-base">
+                                                    {screen.address?.city || 'City'}, {screen.address?.state || 'State'}
+                                                </div>
+                                                {screen.address?.street && (
+                                                    <div className="text-xs text-gray-500 truncate mt-1">
+                                                        {screen.address.street}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-gray-600">
+                                            <span className="text-blue-500">🏢</span>
+                                            <span className="text-sm">
+                                                {getLocationTypeLabel(screen.locationType) || 'Public Space'}
+                                            </span>
+                                        </div>
+                                    </div>
 
-    {/* Specifications Grid - Responsive */}
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4 border-t border-gray-100">
-      <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
-        <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
-          <span className="mr-1">🖥️</span> Res
-        </div>
-        <div className="text-sm font-semibold text-gray-800 truncate">
-          {screen.resolution?.width || 0}×{screen.resolution?.height || 0}
-        </div>
-      </div>
-      
-      <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
-        <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
-          <span className="mr-1">📐</span> Size
-        </div>
-        <div className="text-sm font-semibold text-gray-800">
-          {screen.size?.diagonal || 0}"
-        </div>
-      </div>
-      
-      <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
-        <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
-          <span className="mr-1">📱</span> Orient
-        </div>
-        <div className="text-sm font-semibold text-gray-800 capitalize">
-          {screen.orientation || 'Landscape'}
-        </div>
-      </div>
-      
-      <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
-        <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
-          <span className="mr-1">📁</span> Formats
-        </div>
-        <div className="text-sm font-semibold text-gray-800">
-          {screen.supportedFormats?.length || 0}
-        </div>
-      </div>
-    </div>
+                                    {/* Specifications Grid - Responsive */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4 border-t border-gray-100">
+                                        <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
+                                            <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
+                                                <span className="mr-1">🖥️</span> Res
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-800 truncate">
+                                                {screen.resolution?.width || 0}×{screen.resolution?.height || 0}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
+                                            <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
+                                                <span className="mr-1">📐</span> Size
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-800">
+                                                {screen.size?.diagonal || 0}"
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
+                                            <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
+                                                <span className="mr-1">📱</span> Orient
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-800 capitalize">
+                                                {screen.orientation || 'Landscape'}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="bg-gradient-to-br from-gray-50 to-white p-2 sm:p-3 rounded-lg border border-gray-100">
+                                            <div className="text-xs text-gray-500 font-medium mb-1 flex items-center">
+                                                <span className="mr-1">📁</span> Formats
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-800">
+                                                {screen.supportedFormats?.length || 0}
+                                            </div>
+                                        </div>
+                                    </div>
 
-    {/* Additional Info (Collapsible on mobile) */}
-    {screen.supportedFormats?.length > 0 && (
-      <details className="group mt-4 sm:hidden">
-        <summary className="flex items-center text-xs text-blue-600 font-medium cursor-pointer list-none">
-          <span>View supported formats</span>
-          <svg className="w-4 h-4 ml-1 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </summary>
-        <div className="mt-2 flex flex-wrap gap-1">
-          {screen.supportedFormats.map((format, index) => (
-            <span key={index} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
-              {format.toUpperCase()}
-            </span>
-          ))}
-        </div>
-      </details>
-    )}
+                                    {/* Additional Info (Collapsible on mobile) */}
+                                    {screen.supportedFormats?.length > 0 && (
+                                        <details className="group mt-4 sm:hidden">
+                                            <summary className="flex items-center text-xs text-blue-600 font-medium cursor-pointer list-none">
+                                                <span>View supported formats</span>
+                                                <svg className="w-4 h-4 ml-1 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </summary>
+                                            <div className="mt-2 flex flex-wrap gap-1">
+                                                {screen.supportedFormats.map((format, index) => (
+                                                    <span key={index} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
+                                                        {format.toUpperCase()}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </details>
+                                    )}
 
-    {/* Visible on larger screens */}
-    {screen.supportedFormats?.length > 0 && (
-      <div className="hidden sm:flex flex-wrap gap-1 mt-3">
-        {screen.supportedFormats.slice(0, 3).map((format, index) => (
-          <span key={index} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
-            {format.toUpperCase()}
-          </span>
-        ))}
-        {screen.supportedFormats.length > 3 && (
-          <span className="text-xs text-gray-500">+{screen.supportedFormats.length - 3} more</span>
-        )}
-      </div>
-    )}
-  </div>
+                                    {/* Visible on larger screens */}
+                                    {screen.supportedFormats?.length > 0 && (
+                                        <div className="hidden sm:flex flex-wrap gap-1 mt-3">
+                                            {screen.supportedFormats.slice(0, 3).map((format, index) => (
+                                                <span key={index} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
+                                                    {format.toUpperCase()}
+                                                </span>
+                                            ))}
+                                            {screen.supportedFormats.length > 3 && (
+                                                <span className="text-xs text-gray-500">+{screen.supportedFormats.length - 3} more</span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
 
-  {/* Card Footer */}
-  <div className="p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100">
-    <button 
-      onClick={(e) => {
-        e.stopPropagation();
-        handleScreenSelect(screen);
-      }}
-      className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-xl transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
-    >
-      <span className="text-lg">📅</span>
-      <span className="text-sm sm:text-base">Book Slots</span>
-    </button>
-  </div>
-</div>
+                                {/* Card Footer */}
+                                <div className="p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100">
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleScreenSelect(screen);
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-xl transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
+                                    >
+                                        <span className="text-lg">📅</span>
+                                        <span className="text-sm sm:text-base">Select</span>
+                                    </button>
+                                </div>
+                            </div>
                         ))
                     )}
                 </div>
@@ -756,8 +691,74 @@ const currencies = [
 
     // Slot Creation Form Component
     const renderSlotCreationForm = () => {
-        const timeOptions = generateTimeOptions();
+        // Extract hour, minute, and period from 24-hour time
+        const getTimeParts = (time24) => {
+            const [hours, minutes] = time24.split(':').map(Number);
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const hours12 = hours % 12 || 12;
+            return {
+                hour: hours12.toString().padStart(2, '0'),
+                minute: minutes.toString().padStart(2, '0'),
+                period
+            };
+        };
+
+        // Convert hour, minute, period to 24-hour time
+        const setTimeFromParts = (hour, minute, period) => {
+            let hours = parseInt(hour);
+            
+            if (period === 'PM' && hours !== 12) {
+                hours += 12;
+            } else if (period === 'AM' && hours === 12) {
+                hours = 0;
+            }
+            
+            return `${hours.toString().padStart(2, '0')}:${minute.padStart(2, '0')}`;
+        };
+
+        const timeParts = getTimeParts(formData.start_time);
         
+        // Generate hour options (1-12)
+        const hourOptions = Array.from({ length: 12 }, (_, i) => {
+            const hour = (i + 1).toString().padStart(2, '0');
+            return { value: hour, label: hour };
+        });
+
+        // Generate minute options (00-59)
+        const minuteOptions = Array.from({ length: 60 }, (_, i) => {
+            const minute = i.toString().padStart(2, '0');
+            return { value: minute, label: minute };
+        });
+
+        // Group minutes for better organization
+        const groupedMinuteOptions = {
+            '0-14': minuteOptions.slice(0, 15),
+            '15-29': minuteOptions.slice(15, 30),
+            '30-44': minuteOptions.slice(30, 45),
+            '45-59': minuteOptions.slice(45, 60)
+        };
+
+        // Common minute presets for quick selection
+        const commonMinutePresets = ['00', '15', '30', '45'];
+
+        // Handle hour change
+        const handleHourChange = (hour) => {
+            const newTime = setTimeFromParts(hour, timeParts.minute, timeParts.period);
+            handleStartTimeChange(newTime);
+        };
+
+        // Handle minute change
+        const handleMinuteChange = (minute) => {
+            const newTime = setTimeFromParts(timeParts.hour, minute, timeParts.period);
+            handleStartTimeChange(newTime);
+        };
+
+        // Handle period change
+        const handlePeriodChange = (period) => {
+            const newTime = setTimeFromParts(timeParts.hour, timeParts.minute, period);
+            handleStartTimeChange(newTime);
+        };
+
         return (
             <div className="space-y-6">
                 {/* Header */}
@@ -872,56 +873,187 @@ const currencies = [
 
                                 {/* Time Selection */}
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <label className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                                            <FaClock className="text-purple-500" />
-                                            Time Configuration
-                                        </label>
-                                        
-                                        {/* Time Format Toggle */}
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleTimeFormatChange('24h')}
-                                                className={`px-4 py-2 rounded-lg transition-all duration-200 ${formData.timeFormat === '24h' 
-                                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                                            >
-                                                24-Hour
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleTimeFormatChange('12h')}
-                                                className={`px-4 py-2 rounded-lg transition-all duration-200 ${formData.timeFormat === '12h' 
-                                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                                            >
-                                                12-Hour
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <label className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+                                        <FaClock className="text-purple-500" />
+                                        Time Configuration
+                                    </label>
                                     
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        {/* Start Time */}
+                                        {/* Start Time with Hour, Minute, AM/PM selection */}
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-700">Start Time</label>
-                                            <select
-                                                value={formData.start_time}
-                                                onChange={(e) => handleStartTimeChange(e.target.value)}
-                                                className={`w-full p-4 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ${errors.start_time ? 'border-red-300' : 'border-gray-200'}`}
-                                            >
-                                                {timeOptions.map(time => (
-                                                    <option key={time.value} value={time.value}>
-                                                        {time.display}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-4 md:p-6 border border-blue-100">
+                                                <div className="space-y-6">
+                                                    {/* Time Display Preview */}
+                                                    <div className="text-center mb-4">
+                                                        <div className="text-2xl md:text-3xl font-bold text-gray-800 mb-1">
+                                                            {timeParts.hour}:{timeParts.minute} <span className="text-lg">{timeParts.period}</span>
+                                                        </div>
+                                                        <div className="text-xs text-gray-500">
+                                                            (24-hour format: {formData.start_time})
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Time Picker Controls */}
+                                                    <div className="space-y-6">
+                                                        {/* Hours Selection */}
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center justify-between">
+                                                                <label className="text-sm font-medium text-gray-600">Hour</label>
+                                                                <span className="text-xs text-gray-500">1-12</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                                                                {hourOptions.map((option) => (
+                                                                    <button
+                                                                        key={option.value}
+                                                                        type="button"
+                                                                        onClick={() => handleHourChange(option.value)}
+                                                                        className={`p-2 md:p-3 rounded-xl transition-all duration-200 ${timeParts.hour === option.value 
+                                                                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform -translate-y-0.5' 
+                                                                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md border border-gray-200'}`}
+                                                                    >
+                                                                        <span className="font-semibold text-sm md:text-base">{option.label}</span>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Minutes Selection with tabs */}
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center justify-between">
+                                                                <label className="text-sm font-medium text-gray-600">Minutes</label>
+                                                                <div className="text-xs text-gray-500">00-59</div>
+                                                            </div>
+                                                            
+                                                            {/* Common Minute Presets */}
+                                                            <div className="mb-4">
+                                                                <div className="text-xs font-medium text-gray-500 mb-2">Common Times</div>
+                                                                <div className="grid grid-cols-4 gap-2">
+                                                                    {commonMinutePresets.map((minute) => (
+                                                                        <button
+                                                                            key={minute}
+                                                                            type="button"
+                                                                            onClick={() => handleMinuteChange(minute)}
+                                                                            className={`p-2 rounded-lg transition-all duration-200 ${timeParts.minute === minute 
+                                                                                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md' 
+                                                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                                                        >
+                                                                            <span className="font-medium">{minute}</span>
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* All Minutes Selection with Scroll */}
+                                                            <div className="space-y-3">
+                                                                <div className="text-xs font-medium text-gray-500">All Minutes</div>
+                                                                <div className="bg-white rounded-xl border border-gray-200 p-3 max-h-60 overflow-y-auto">
+                                                                    <div className="space-y-4">
+                                                                        {Object.entries(groupedMinuteOptions).map(([range, minutes]) => (
+                                                                            <div key={range}>
+                                                                                <div className="text-xs font-medium text-gray-400 mb-2 px-2">
+                                                                                    Minutes {range}
+                                                                                </div>
+                                                                                <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-1 mb-3">
+                                                                                    {minutes.map((option) => (
+                                                                                        <button
+                                                                                            key={option.value}
+                                                                                            type="button"
+                                                                                            onClick={() => handleMinuteChange(option.value)}
+                                                                                            className={`p-1.5 md:p-2 text-xs md:text-sm rounded-lg transition-all duration-150 ${timeParts.minute === option.value 
+                                                                                                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md' 
+                                                                                                : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm border border-gray-100'}`}
+                                                                                        >
+                                                                                            {option.label}
+                                                                                        </button>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* AM/PM Selector */}
+                                                        <div className="space-y-3">
+                                                            <label className="text-sm font-medium text-gray-600">AM/PM</label>
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handlePeriodChange('AM')}
+                                                                    className={`p-4 rounded-xl transition-all duration-200 ${timeParts.period === 'AM' 
+                                                                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg transform -translate-y-0.5' 
+                                                                        : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md border border-gray-200'}`}
+                                                                >
+                                                                    <div className="flex flex-col items-center">
+                                                                        <div className="font-bold text-xl">AM</div>
+                                                                        <div className="text-xs mt-1 opacity-90">Morning</div>
+                                                                        <div className="text-xs opacity-70">(12:00 AM - 11:59 AM)</div>
+                                                                    </div>
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handlePeriodChange('PM')}
+                                                                    className={`p-4 rounded-xl transition-all duration-200 ${timeParts.period === 'PM' 
+                                                                        ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform -translate-y-0.5' 
+                                                                        : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md border border-gray-200'}`}
+                                                                >
+                                                                    <div className="flex flex-col items-center">
+                                                                        <div className="font-bold text-xl">PM</div>
+                                                                        <div className="text-xs mt-1 opacity-90">Afternoon/Evening</div>
+                                                                        <div className="text-xs opacity-70">(12:00 PM - 11:59 PM)</div>
+                                                                    </div>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Quick Time Presets */}
+                                                    <div className="pt-4 border-t border-gray-100">
+                                                        <div className="text-sm font-medium text-gray-600 mb-3">Quick Time Presets</div>
+                                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                                            {[
+                                                                { hour: '09', minute: '00', period: 'AM', label: 'Morning', time: '9:00 AM' },
+                                                                { hour: '12', minute: '00', period: 'PM', label: 'Noon', time: '12:00 PM' },
+                                                                { hour: '03', minute: '00', period: 'PM', label: 'Afternoon', time: '3:00 PM' },
+                                                                { hour: '06', minute: '00', period: 'PM', label: 'Evening', time: '6:00 PM' },
+                                                                { hour: '08', minute: '00', period: 'PM', label: 'Prime Time', time: '8:00 PM' },
+                                                                { hour: '10', minute: '00', period: 'PM', label: 'Late Night', time: '10:00 PM' },
+                                                                { hour: '07', minute: '30', period: 'AM', label: 'Rush Hour', time: '7:30 AM' },
+                                                                { hour: '05', minute: '30', period: 'PM', label: 'Evening Rush', time: '5:30 PM' }
+                                                            ].map((preset) => (
+                                                                <button
+                                                                    key={preset.label}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const newTime = setTimeFromParts(preset.hour, preset.minute, preset.period);
+                                                                        handleStartTimeChange(newTime);
+                                                                    }}
+                                                                    className={`p-3 rounded-xl transition-all duration-200 ${timeParts.hour === preset.hour && timeParts.minute === preset.minute && timeParts.period === preset.period 
+                                                                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg' 
+                                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'}`}
+                                                                >
+                                                                    <div className="font-medium text-sm">{preset.label}</div>
+                                                                    <div className="text-xs opacity-90">{preset.time}</div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {errors.start_time && (
+                                                <p className="text-sm text-red-600 mt-2 flex items-center gap-1">
+                                                    <FaExclamationTriangle className="text-sm" />
+                                                    {errors.start_time}
+                                                </p>
+                                            )}
                                         </div>
 
-                                        {/* Duration */}
+                                        {/* Duration Selection */}
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-700">Duration</label>
-                                            <div className="grid grid-cols-4 gap-2">
+                                            <div className="grid grid-cols-2 gap-2">
                                                 {durationOptions.map(duration => (
                                                     <button
                                                         key={duration}
@@ -931,13 +1063,20 @@ const currencies = [
                                                             ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
                                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                                                     >
-                                                        {duration}m
+                                                        <div className="font-bold text-lg">{duration}</div>
+                                                        <div className="text-xs">minutes</div>
                                                     </button>
                                                 ))}
                                             </div>
+                                            {errors.duration_minutes && (
+                                                <p className="text-sm text-red-600 mt-2 flex items-center gap-1">
+                                                    <FaExclamationTriangle className="text-sm" />
+                                                    {errors.duration_minutes}
+                                                </p>
+                                            )}
                                         </div>
 
-                                        {/* End Time */}
+                                        {/* End Time Display */}
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-700">End Time</label>
                                             <div className="p-4 bg-gradient-to-r from-gray-100 to-gray-50 border border-gray-200 rounded-xl">
@@ -946,6 +1085,9 @@ const currencies = [
                                                         {formatTimeDisplay(formData.end_time)}
                                                     </div>
                                                     <div className="text-xs text-gray-500">Calculated automatically</div>
+                                                    <div className="mt-2 text-sm text-gray-600">
+                                                        Total: {formData.duration_minutes} minutes
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1031,19 +1173,15 @@ const currencies = [
                                             <h4 className="text-lg font-semibold mb-4">Slot Summary</h4>
                                             <div className="space-y-3">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-gray-300">Time Format</span>
-                                                    <span className="font-medium">{formData.timeFormat === '24h' ? '24-Hour' : '12-Hour'}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-300">Duration</span>
-                                                    <span className="font-medium">{formData.duration_minutes} minutes</span>
-                                                </div>
-                                                <div className="flex justify-between items-center">
                                                     <span className="text-gray-300">Time Slot</span>
                                                     <span className="font-medium text-right">
                                                         {formatTimeDisplay(formData.start_time)}<br/>
                                                         to {formatTimeDisplay(formData.end_time)}
                                                     </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-300">Duration</span>
+                                                    <span className="font-medium">{formData.duration_minutes} minutes</span>
                                                 </div>
                                                 <div className="flex justify-between items-center pt-3 border-t border-gray-700">
                                                     <span className="text-gray-300">Currency</span>

@@ -21,7 +21,7 @@ const loadRazorpay = () => {
 
 /* ================= MAIN COMPONENT ================= */
 export default function AdSlotPayment({ selectedBooking, setstep }) {
-  const { BookingdoneHandler, setPaymentSuccessPopUp, setPaymentSuccesdData,slotConfirmHandler } = useContext(Context);
+  const { BookingdoneHandler, setPaymentSuccessPopUp, setPaymentSuccesdData,slotConfirmHandler, } = useContext(Context);
   const { notify, user, getCurrencySymbol, usertoken } = useContext(Context);
 
   const [paymentMethod, setPaymentMethod] = useState("razorpay");

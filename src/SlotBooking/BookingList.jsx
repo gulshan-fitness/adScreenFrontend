@@ -40,9 +40,10 @@ import { Context } from '../Context_holder';
 import axios from 'axios';
 import { socket } from '../../Socket';
 import AdSlotPayment from '../Payment/AdSlotPayment';
+import Loader from '../ReusedComponents/Loader';
 
 const BookingList = () => {
-  const { usertoken, user, FetchApi ,notify} = useContext(Context);
+  const { usertoken, user, FetchApi ,notify,bookingDeleteHandler} = useContext(Context);
   const [step,setstep] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState('all');
@@ -59,11 +60,22 @@ const BookingList = () => {
   const [mediaCurrentTime, setMediaCurrentTime] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(false); // Added loading state
+    const [DeleteLoader, setDeleteLoader] = useState(false); 
 
 
 
 
+const DeleteHandler=async(id,files)=>{
+  if(!user|| !usertoken) return
+setDeleteLoader(true)
+ const res =await bookingDeleteHandler(id,files)
+ if(res?.status==1){
+     getBooking(user, usertoken);
+     setDeleteLoader(false)
+ }
 
+
+}
 
   const videoRef = useRef(null);
   const mediaContainerRef = useRef(null);
@@ -80,8 +92,8 @@ useEffect(() => {
   }
 
   const onConnect = () => {
-    console.log("Socket connected:", socket.id);
-    socket.emit("JoinBookingRoom", user._id);
+    console.log("Socket connected by advertiser:", socket.id);
+    socket.emit("JoinAdvertiserRoom", user._id);
   };
 
   const onBookingUpdate = (data) => {
@@ -91,6 +103,50 @@ useEffect(() => {
 
       const updated = [...prev];
       updated[index] = data;
+      return updated;
+    });
+
+    console.log("Booking update:", data);
+  };
+
+  const onDisconnect = () => {
+    console.log("Socket disconnected");
+  };
+
+  socket.on("connect", onConnect);
+  socket.on("BookingUpdate", onBookingUpdate);
+  socket.on("disconnect", onDisconnect);
+
+  return () => {
+    socket.off("connect", onConnect);
+    socket.off("BookingUpdate", onBookingUpdate);
+    socket.off("disconnect", onDisconnect);
+
+    // ❌ DO NOT disconnect here
+  };
+}, [user?._id]);
+
+
+useEffect(() => {
+  if (!user?._id || user?.role !== "screen_owner") return;
+
+  // Connect only if not already connected
+
+  if (!socket.connected) {
+    socket.connect();
+  }
+
+  const onConnect = () => {
+    console.log("Socket connected by owner:",socket.id);
+    socket.emit("JoinScreenOwnerRoom",user._id);
+  };
+
+  const onBookingUpdate = (data) => {
+    setBookings((prev) => {
+    
+
+      const updated = [...prev,data];
+    
       return updated;
     });
 
@@ -133,7 +189,7 @@ useEffect(() => {
   useEffect(() => {
     if (!user || !usertoken) return;
     getBooking(user, usertoken);
-  }, [user, usertoken]);
+  }, [user, usertoken,step]);
 
 
 
@@ -664,10 +720,16 @@ const statusConfig = {
                         </div>
                       </div>
                     </div>
-
-                    <div className={`text-xs rounded-full px-3 py-1 ${paymentStatus.bg} ${paymentStatus.border} border ${paymentStatus.color}`}>
+                    {booking?.booking_status!=="rejected" &&(
+                      <div className={`text-xs rounded-full px-3 py-1 ${paymentStatus.bg} ${paymentStatus.border} border ${paymentStatus.color}`}>
                       {paymentStatus.label}
                     </div>
+                    )
+                    }
+
+                    
+
+
                   </div>
 
                   {/* Card Content */}
@@ -783,15 +845,39 @@ const statusConfig = {
                     </button>
 
                     {user?.role == "advertiser" ? (
-                      <button
-                        disabled={!booking?.approved || !booking?.booking_status=="rejected"}
+
+                      <div>
+
+                         <button
+                        disabled={!booking?.approved || booking?.booking_status=="rejected" ||booking?.payment_status=="paid"}
                         onClick={()=> payHandler(booking) }
-                        className="rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-white transition-all
+                        className={`rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-white transition-all
                                    hover:bg-gray-800
-                                   disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-gray-800/50"
+                                   disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-gray-800/50   ${booking?.booking_status=="rejected" ||booking?.payment_status=="paid"?"hidden":"block"}`}
                       >
                         Pay Now
                       </button>
+                      {
+DeleteLoader?( <Loader/>):(
+  <button
+                    
+                        onClick={()=>  DeleteHandler(booking?._id,booking?.adfiles) }
+                        className={`rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-white transition-all
+                                   hover:bg-gray-800
+                                   disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-gray-800/50 ${!booking?.approved && booking?.booking_status=="rejected" ?"block":"hidden"} `}
+                      >
+                        Delete
+                      </button>
+)
+                      }
+
+                     
+
+                       
+
+
+                      </div>
+                   
                     ) : (
                       <div className='flex gap-1 flex-wrap'>
                         <button
@@ -821,19 +907,27 @@ const statusConfig = {
                   </div>
 
                   {/* Approval Badge */}
-                  <div className="mt-4">
+
+{
+  booking?.booking_status!=="rejected" &&  <div className="mt-4">
                     {booking.approved ? (
                       <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400">
                         <FaCheckCircle />
                         Approved
                       </div>
-                    ) : (
+                    ) 
+                    : 
+                    (
                       <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs text-amber-400">
                         <FaHourglassHalf />
                         Pending Approval
                       </div>
                     )}
                   </div>
+}
+                 
+
+
                 </div>
               </div>
             );

@@ -728,37 +728,53 @@ const SlotBooking = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {screenSlots.map((slot) => {
-                    const isSelected = selectedSlots.some(s => s._id === slot._id);
-                    const isAvailable = slot.status === 'available';
-                    
-                    return (
-                      <button
-                        key={slot._id}
-                        onClick={() => handleSlotSelect(slot)}
-                        disabled={!isAvailable}
-                        className={`
-                          p-4 rounded-lg border text-center transition-all duration-200
-                          ${isSelected 
-                            ? 'bg-blue-600 text-white border-blue-600 shadow-lg' 
-                            : isAvailable
-                              ? 'bg-white hover:bg-blue-50 border-gray-200'
-                              : 'bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed'
-                          }
-                        `}
-                      >
-                        <div className="font-medium text-sm">
-                          {formatTime(slot.start_datetime)}
-                        </div>
-                        <div className="text-xs mt-1">
-                          {isSelected ? 'Selected' : isAvailable ? 'Available' : 'Booked'}
-                        </div>
-                        <div className={`mt-2 font-semibold text-sm ${isSelected ? 'text-blue-100' : 'text-blue-600'}`}>
-                          {getCurrencySymbol?.(slot.currency || 'INR')}{slot.price}
-                        </div>
-                      </button>
-                    );
-                  })}
+                {screenSlots?.map((slot) => {
+  const isSelected = selectedSlots.some(s => s._id === slot._id);
+  const isAvailable = slot.status === "available";
+
+  return (
+    <button
+      key={slot._id}
+      onClick={() => isAvailable && handleSlotSelect(slot)}
+      disabled={!isAvailable}
+      className={`
+        p-4 rounded-lg border text-center transition-all duration-200
+        ${
+          isSelected && isAvailable
+            ? "bg-blue-600 text-white border-blue-600 shadow-lg"
+            : isAvailable
+              ? "bg-white hover:bg-blue-50 border-gray-200 cursor-pointer"
+              : "bg-gray-100 border-gray-300 opacity-40 cursor-not-allowed"
+        }
+      `}
+    >
+      {/* Time */}
+      <div className="font-medium text-sm">
+        {formatTime(slot.start_datetime)}
+      </div>
+
+      {/* Status */}
+      <div className="text-xs mt-1">
+        {isAvailable ? "Available" : slot.status}
+      </div>
+
+      {/* Price */}
+      <div
+        className={`mt-2 font-semibold text-sm ${
+          isAvailable
+            ? isSelected
+              ? "text-blue-100"
+              : "text-blue-600"
+            : "text-gray-400"
+        }`}
+      >
+        {getCurrencySymbol?.(slot.currency || "INR")}
+        {slot.price}
+      </div>
+    </button>
+  );
+})}
+
                 </div>
               )}
             </div>
