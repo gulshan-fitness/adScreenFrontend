@@ -53,6 +53,8 @@ import Wallet from "./User/Wallet";
 import SlotCreationComponent from "./User/SlotCreationForm";
 import SlotBooking from "./User/SlotBooking";
 import MyBookingsPage from "./SlotBooking/BookingList";
+import AdScreen from "./AdScreen/AdScreen";
+import AdScreenList from "./User/AdScreenList";
 
 
 
@@ -112,6 +114,12 @@ function App() {
         {
           path: "",
           element: <SSM />,
+        },
+
+
+        {
+          path: "adscreen/:id",
+          element: <AdScreen />,
         },
 
         {
@@ -261,6 +269,11 @@ function App() {
     {
       path: "profile",
       element: <ProfileDetails />
+    },
+
+      {
+      path: "playads",
+      element: <AdScreenList />
     },
     {
       path: "findscreens",

@@ -113,6 +113,11 @@ const UserProfileDashboard = () => {
       { name: "View", path: "screens/view", icon: <MdVisibility /> },
     ], },
 
+
+     { id: 'playad', label: 'Play AD', icon: <MdScreenShare className="text-xl" />, mobile: true, path: 'playads',   },
+
+
+
     { id: 'slots', label: 'Set Slots', icon: <MdSchedule className="text-xl" />, mobile: true, path: '' ,subitems: [
       { name: "Add", path: "slots/add", icon: <MdAdd /> },
       { name: "View", path: "slots/view", icon: <MdVisibility /> },

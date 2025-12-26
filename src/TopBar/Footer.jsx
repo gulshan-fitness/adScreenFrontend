@@ -8,13 +8,7 @@ export default function Footer(){
     <footer className="w-full bg-black text-[#F6FFFA] pt-10 pb-6 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
         
-        {/* Brand */}
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-[#FFD700]">MyApp</h2>
-          <p className="text-sm sm:text-base opacity-90">
-            Empowering your journey with smart solutions and a human touch.
-          </p>
-        </div>
+    
 
         {/* Quick Links */}
         <div>
