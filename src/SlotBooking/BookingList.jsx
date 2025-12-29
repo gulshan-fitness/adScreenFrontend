@@ -43,7 +43,7 @@ import AdSlotPayment from '../Payment/AdSlotPayment';
 import Loader from '../ReusedComponents/Loader';
 
 const BookingList = () => {
-  const { usertoken, user, FetchApi ,notify,bookingDeleteHandler} = useContext(Context);
+  const { usertoken, user, FetchApi ,notify,bookingDeleteHandler,getCurrencySymbol} = useContext(Context);
   const [step,setstep] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState('all');
@@ -813,7 +813,12 @@ const statusConfig = {
                       <div>
                         <p className="text-sm text-gray-400">Price</p>
                         <div className="flex items-center gap-1">
-                          <FaRupeeSign className="text-gray-300" />
+
+                        
+                            <p className="text-gray-300 font-bold">{ getCurrencySymbol(booking?.currency)}</p>
+                            
+                       
+                         
                           <span className="text-xl font-bold text-white">
                             {booking.price?.toLocaleString('en-IN')}
                           </span>

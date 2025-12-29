@@ -79,6 +79,24 @@ useEffect(() => {
 }, [id, usertoken]);
 
 
+const lastStatusRef = useRef(null);
+
+useEffect(() => {
+  const onlinestatus = PlayingScreen ? true : false;
+
+  if (lastStatusRef.current === onlinestatus) return;
+  lastStatusRef.current = onlinestatus;
+
+  socket.emit("screen_status", {
+    screen_id: id,
+    booking_id: PlayingScreen?._id,
+    onlinestatus
+  });
+
+}, [PlayingScreen, id]);
+
+
+
   /* =========================
      PLAYLIST LOGIC
   ========================== */
