@@ -48,6 +48,7 @@ const AdScreen = () => {
   /* =========================
      SOCKET CONNECTION
   ========================== */
+  
 useEffect(() => {
   if (!id || !user || !usertoken) return;
 
@@ -79,21 +80,43 @@ useEffect(() => {
 }, [id, usertoken]);
 
 
-const lastStatusRef = useRef(null);
 
 useEffect(() => {
-  const onlinestatus = PlayingScreen ? true : false;
+  
+  if (!id ||!PlayingScreen) return;
 
-  if (lastStatusRef.current === onlinestatus) return;
-  lastStatusRef.current = onlinestatus;
 
-  socket.emit("screen_status", {
-    screen_id: id,
-    booking_id: PlayingScreen?._id,
-    onlinestatus
-  });
+const emitStatus = () => {
+    const onlinestatus =PlayingScreen?true:false;
 
-}, [PlayingScreen, id]);
+ socket.emit("screen_status", {
+  screen_id: id,
+  booking_id: PlayingScreen?._id || null,
+  advertiser_id: PlayingScreen?.advertiser_id || null, // <-- use _id
+  onlinestatus: !!PlayingScreen
+});
+
+
+    console.log("📡 screen_status heartbeat:", {
+      screen_id: id,
+      onlinestatus
+    });
+  };
+
+  // 🔁 emit immediately
+
+  emitStatus();
+
+  // 🔁 emit every 5 seconds
+
+  const interval = setInterval(emitStatus, 5000);
+
+  return () => {
+    clearInterval(interval);
+  };
+
+}, [id, PlayingScreen?._id]);
+
 
 
 

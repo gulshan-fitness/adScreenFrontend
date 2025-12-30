@@ -55,6 +55,7 @@ import SlotBooking from "./User/SlotBooking";
 import MyBookingsPage from "./SlotBooking/BookingList";
 import AdScreen from "./AdScreen/AdScreen";
 import AdScreenList from "./User/AdScreenList";
+import ScreenStatus from "./User/ScreenStatus";
 
 
 
@@ -121,6 +122,9 @@ function App() {
           path: "adscreen/:id",
           element: <AdScreen />,
         },
+
+
+
 
         {
           path: "/usersignup",
@@ -261,6 +265,15 @@ function App() {
     {
       path: "",
       element: <DashboardOverview /> // Default/overview page
+    },
+
+
+
+    
+
+       {
+      path: "onlinescreens",
+      element: <ScreenStatus />
     },
     {
       path: "overview",

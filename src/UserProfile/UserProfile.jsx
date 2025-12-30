@@ -93,6 +93,10 @@ const UserProfileDashboard = () => {
 
     { id: 'search', label: 'Find Screens', icon: <MdScreenSearchDesktop  className="text-xl" />, mobile: true, path: 'findscreens' },
 
+
+    
+    { id: 'search', label: 'Online Screens', icon: <MdScreenSearchDesktop  className="text-xl" />, mobile: true, path: 'onlinescreens' },
+
     { id: 'campaigns', label: 'My Campaigns', icon: <SiGoogleads className="text-xl" />, mobile: true, path: 'campaigns' },
     { id: 'wallet', label: 'Wallet', icon: <MdAccountBalanceWallet className="text-xl" />, mobile: true, path: 'wallet' },
     { id: 'bookings', label: 'Booking List', icon: <FaRegCalendarCheck className="text-xl" />, mobile: true, path: 'bookinglist' },
