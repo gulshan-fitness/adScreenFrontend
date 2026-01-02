@@ -190,9 +190,9 @@ const UserProfileDashboard = () => {
             
             {showMobileMenu && (
               <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                {navItems.filter(item => !item.mobile).map(item => (
+                {navItems.filter((item,) => !item.mobile).map((item,index) => (
                   <button
-                    key={item.id}
+                    key={index}
                     onClick={() => handleNavigation(item.path)}
                     className="w-full flex items-center space-x-3 px-4 py-2 text-left hover:bg-gray-50 text-sm"
                   >
@@ -304,8 +304,8 @@ const UserProfileDashboard = () => {
           {/* Navigation */}
           <nav className="flex-1 p-4 md:p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gradient-to-b scrollbar-thumb-from-purple-500 scrollbar-thumb-to-blue-500 scrollbar-track-gray-100">
   <ul className="space-y-2 md:space-y-3">
-    {navItems?.map(item => (
-      <li key={item.id} className="group ">
+    {navItems?.map((item,index) => (
+      <li key={index} className="group ">
         {/* Main Navigation Item */}
         <button
           onClick={() => (item?.id === "overview" || item?.path) && handleNavigation(item.path)}
@@ -482,9 +482,9 @@ const UserProfileDashboard = () => {
 
           {/* Mobile Bottom Navigation */}
           <div className="lg:hidden overflow-x-auto fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-around items-center z-40 shadow-lg">
-            {mobileNavItems.map(item => (
+            {mobileNavItems.map((item,index) => (
               <button
-                key={item.id}
+                key={index}
                 onClick={() => handleNavigation(item.path)}
                 className={`flex flex-col items-center p-2 rounded-lg transition-all flex-1 ${
                   activeTab === item.id 
