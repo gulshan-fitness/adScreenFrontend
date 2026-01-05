@@ -1,362 +1,17 @@
-// import React, { useEffect, useState } from 'react';
-// import { useContext } from 'react';
-// import io from 'socket.io-client';
-// import { Context } from '../Context_holder';
-// import { socket } from '../../Socket';
-
-
-
-// const ScreenStatus = () => {
-//   const { FetchApi, user, usertoken } = useContext(Context);
-
-
-//   const [bookings, setBookings] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-  
-// // Track last ping per screen
-// const [activeBookings, setActiveBookings] = useState({});
-
-
-// const [screenHeartbeat, setScreenHeartbeat] = useState({});
-
-
-
-
-
-// const isSlotLiveNow = (start, end) => {
-//   const now = new Date();
-//   return new Date(start) <= now && now < new Date(end);
-// };
-
-
-//   // Extract screen info safely from the first booking (or fallback)
-
-//   const getBookings = async () => {
-//     if (!user?._id || !usertoken) return;
-
-//     setLoading(true);
-//     try {
-//       const res = await FetchApi(
-//         null,
-//         import.meta.env.VITE_USER_URL,
-//         "getbookings",
-//         `${user._id}/null`,
-//         null,
-//         null,
-//         usertoken
-//       );
-//       setBookings(Array.isArray(res) ? res : []);
-//     } catch (err) {
-//       console.error("Error fetching bookings:", err);
-//       setBookings([]);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-// useEffect(() => {
-//   if (!socket.connected) socket.connect();
-
-//   const onHeartbeat = (data) => {
-//     const { screen_id, booking_id } = data;
-//     if (!screen_id || !booking_id) return;
-
-//     setScreenHeartbeat(prev => ({
-//       ...prev,
-//       [screen_id]: {
-//         bookingId: booking_id,
-//         lastPing: Date.now(),
-//       }
-//     }));
-//   };
-
-//   socket.on("screen_status", onHeartbeat);
-
-//   return () => {
-//     socket.off("screen_status", onHeartbeat);
-//   };
-// }, []);
-
-
-//   useEffect(() => {
-//     if (user && usertoken) {
-        
-      
-//       getBookings();  
-
-
-
-//        if (!socket.connected) {
-//           socket.connect();
-//         }
-
-
-      
-//         const onConnect = () => {
-//           console.log("Socket connected for online screen:", socket.id);
-//           socket.emit("onlineScreenUpdateRoom",user._id);
-//         };
-
-      
-// const onOnlineUpdate = (data) => {
-//   if (!data?.booking_id || !data?.screen_id) return;
-
-//   const now = Date.now();
-
-//   // Update last ping first
-//   setActiveBookings(prev => ({
-//     ...prev,
-//     [data.screen_id]: {
-//       bookingId: data.booking_id,
-//       advertiserId: data.advertiser_id,
-//       lastPing: now
-//     }
-//   }));
-
-//   // Then update bookings list — force correct online/offline
-//   setBookings(prev => prev.map(item => {
-//     const isThisBooking = item._id === data.booking_id && 
-//                           item.screen_id?._id === data.screen_id;
-
-//     const isSameScreenOtherBooking = item.screen_id?._id === data.screen_id &&
-//                                      item._id !== data.booking_id;
-
-//     if (isThisBooking) {
-//       return { ...item, onlinestatus: true };
-//     }
-//     if (isSameScreenOtherBooking) {
-//       return { ...item, onlinestatus: false };
-//     }
-//     return item;
-//   }));
-// };
-
-
-
-
-
-
-
-
-      
-//         const onDisconnect = () => {
-//           console.log("Socket disconnected");
-//         };
-      
-//         socket.on("connect", onConnect);
-//         socket.on("screen_online_update", onOnlineUpdate);
-//         socket.on("disconnect", onDisconnect);
-      
-//         return () => {
-//           socket.off("connect", onConnect);
-//           socket.off("screen_online_update", onOnlineUpdate);
-//           socket.off("disconnect", onDisconnect);
-      
-//           // ❌ DO NOT disconnect here
-//         };
-//     }
-//   }, [user, usertoken]);
-
-
-
-// useEffect(() => {
-//   const interval = setInterval(() => {
-//     const now = Date.now();
-//     const TIMEOUT = 12000; // 12 seconds buffer (since heartbeat every 5s)
-
-//     setBookings(prevBookings => {
-//       let hasOfflineChange = false;
-//       const updatedBookings = prevBookings.map(booking => {
-//         const screenId = booking?.screen_id?._id;
-//         const active = activeBookings[screenId];
-
-//         // Only care about the currently active booking on this screen
-//         if (active && booking._id === active.bookingId) {
-//           const timeSinceLastPing = now - active.lastPing;
-
-//           if (timeSinceLastPing > TIMEOUT && booking.onlinestatus === true) {
-//             hasOfflineChange = true;
-//             return { ...booking, onlinestatus: false };
-//           }
-//         }
-//         return booking;
-//       });
-
-//       // Optional: clean up stale activeBookings after marking offline
-//       if (hasOfflineChange) {
-//         setActiveBookings(prev => {
-//           const newActive = { ...prev };
-//           Object.keys(newActive).forEach(screenId => {
-//             if (now - newActive[screenId].lastPing > TIMEOUT) {
-//               delete newActive[screenId];
-//             }
-//           });
-//           return newActive;
-//         });
-//       }
-
-//       return updatedBookings;
-//     });
-//   }, 3000); // Reduced check frequency: every 3 seconds is enough
-
-//   return () => clearInterval(interval);
-// }, [activeBookings]); // Only depend on activeBookings
-
-
-
-
-
-
-
-
-
-
-
-
-
-//   const formatTime = (isoString) => {
-//     if (!isoString) return 'Invalid time';
-//     return new Date(isoString).toLocaleTimeString('en-US', {
-//       hour: '2-digit',
-//       minute: '2-digit',
-//       hour12: true,
-//     });
-//   };
-
-//   const formatDate = (isoString) => {
-//     if (!isoString) return 'Invalid date';
-//     return new Date(isoString).toLocaleDateString('en-US', {
-//       weekday: 'short',
-//       day: 'numeric',
-//       month: 'short',
-//       year: 'numeric',
-//     });
-//   };
-
-//   const isLiveNow = (start, end) => {
-//     if (!start || !end) return false;
-//     const now = new Date();
-//     return new Date(start) <= now && now < new Date(end);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-50">
-      
-
-//       {/* Main Content */}
-//       <main className="px-4 py-6 sm:px-6 max-w-4xl mx-auto">
-//         <h2 className="text-lg font-semibold text-gray-800 mb-5">Booked Slots</h2>
-
-//         {loading ? (
-//           <div className="flex justify-center py-12">
-//             <div className="text-gray-500">Loading bookings...</div>
-//           </div>
-//         ) : bookings.length === 0 ? (
-//           <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-200">
-//             <p className="text-gray-500 text-lg">No bookings found</p>
-//             <p className="text-sm text-gray-400 mt-2">This screen has no scheduled ads yet.</p>
-//           </div>
-//         ) : (
-//           <div className="space-y-4">
-//          {bookings
-//   .sort((a, b) => new Date(b.start_datetime) - new Date(a.start_datetime))
-//   .map((booking,index) => {
-//     const startTime = formatTime(booking?.start_datetime);
-//     const endTime = formatTime(booking?.end_datetime);
-//     const date = formatDate(booking?.start_datetime);
-
-//     const isOnline = booking?.onlinestatus ;
-
-//     return (
-//       <div
-//         key={index}
-//         className={`
-//           bg-white rounded-xl shadow-sm border p-5 transition-all
-//           ${isOnline
-//             ? "border-green-300 ring-1 ring-green-100"
-//             : "border-red-300"
-//           }
-//         `}
-//       >
-//         <div className="flex flex-col gap-4">
-//           {/* Top Row: Screen Info + Online Status */}
-//           <div className="flex justify-between items-start">
-//             <div>
-//               <h3 className="font-semibold text-gray-900 text-lg">
-//                 {booking?.screen_id?.screenName}
-//               </h3>
-//               <p className="text-sm text-gray-600 mt-1">
-//                 {booking?.screen_id?.address?.street},{booking?.screen_id?.address?.city},
-//                 {booking?.screen_id?.address?.state}
-//               </p>
-//             </div>
-
-//             {/* ONLINE / OFFLINE BADGE */}
-//             <span
-//               className={`inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-full
-//                 ${isOnline
-//                   ? "text-green-800 bg-green-100"
-//                   : "text-red-800 bg-red-100"
-//                 }
-//               `}
-//             >
-//               ● {isOnline ? "ONLINE" : "OFFLINE"}
-//             </span>
-//           </div>
-
-//           {/* Bottom Row: Time Info */}
-//           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 pt-3 border-t border-gray-100">
-//             <div>
-//               <p className="text-sm text-gray-600">Scheduled Time</p>
-//               <p className="font-bold text-lg text-gray-900">
-//                 {startTime} – {endTime}
-//               </p>
-//               <p className="text-sm text-gray-500">{date}</p>
-//             </div>
-
-//             <div className="text-right">
-//               <p className="text-sm text-gray-600">Duration</p>
-//               <p className="font-medium text-gray-900">
-//                 {booking?.duration_minutes} minutes
-//               </p>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     );
-//   })}
-
-//           </div>
-//         )}
-//       </main>
-
-//       {/* Footer */}
-//       <footer className="px-4 py-6 text-center">
-//         <p className="text-xs text-gray-500">
-//           Updated: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-//         </p>
-//       </footer>
-//     </div>
-//   );
-// };
-
-// export default ScreenStatus;
-
-
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useContext } from 'react';
 import { Context } from '../Context_holder';
 import { socket } from '../../Socket';
 
 const ScreenStatus = () => {
   const { FetchApi, user, usertoken } = useContext(Context);
-
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Track last ping per screen - this is the source of truth
   const [screenHeartbeat, setScreenHeartbeat] = useState({});
+
+  const heartbeatRef = useRef({});
+  const timeoutRefs = useRef({});
+  const lastBookingRef = useRef({});
 
   const getBookings = async () => {
     if (!user?._id || !usertoken) return;
@@ -381,221 +36,268 @@ const ScreenStatus = () => {
     }
   };
 
-  /* =========================
-     SOCKET - LISTEN FOR HEARTBEATS
-  ========================== */
+  const handleHeartbeat = useCallback((data) => {
+    const { screen_id, booking_id, advertiser_id } = data;
+    if (!screen_id || !booking_id) return;
+
+    const now = Date.now();
+
+    if (timeoutRefs.current[screen_id]) {
+      clearTimeout(timeoutRefs.current[screen_id]);
+    }
+
+    const previousBookingId = lastBookingRef.current[screen_id];
+    lastBookingRef.current[screen_id] = booking_id;
+
+    heartbeatRef.current = {
+      ...heartbeatRef.current,
+      [screen_id]: {
+        bookingId: booking_id,
+        advertiserId: advertiser_id,
+        lastPing: now,
+        isActive: true,
+      },
+    };
+
+    if (previousBookingId && previousBookingId !== booking_id) {
+      setScreenHeartbeat((prev) => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach((key) => {
+          if (updated[key]?.bookingId === previousBookingId) {
+            updated[key] = { ...updated[key], isActive: false };
+          }
+        });
+        return updated;
+      });
+    }
+
+    setScreenHeartbeat((prev) => ({
+      ...prev,
+      [screen_id]: {
+        bookingId: booking_id,
+        advertiserId: advertiser_id,
+        lastPing: now,
+        isActive: true,
+      },
+    }));
+
+    timeoutRefs.current[screen_id] = setTimeout(() => {
+      setScreenHeartbeat((prev) => {
+        if (!prev[screen_id]) return prev;
+        if (Date.now() - prev[screen_id].lastPing >= 10000) {
+          return {
+            ...prev,
+            [screen_id]: { ...prev[screen_id], isActive: false },
+          };
+        }
+        return prev;
+      });
+    }, 10000);
+  }, []);
+
+  useEffect(() => {
+    const checkInterval = setInterval(() => {
+      const now = Date.now();
+      setScreenHeartbeat((prev) => {
+        const updated = { ...prev };
+        let changed = false;
+        Object.keys(updated).forEach((id) => {
+          const hb = updated[id];
+          if (hb && hb.isActive && now - hb.lastPing >= 15000) {
+            updated[id] = { ...hb, isActive: false };
+            changed = true;
+          }
+        });
+        return changed ? updated : prev;
+      });
+    }, 5000);
+
+    return () => clearInterval(checkInterval);
+  }, []);
+
   useEffect(() => {
     if (!socket.connected) socket.connect();
 
-    const onHeartbeat = (data) => {
-      const { screen_id, booking_id, advertiser_id } = data;
-      if (!screen_id || !booking_id) return;
+    const onHeartbeat = (data) => handleHeartbeat(data);
+    const onOnlineUpdate = (data) => handleHeartbeat(data);
 
-      setScreenHeartbeat(prev => ({
-        ...prev,
-        [screen_id]: {
-          bookingId: booking_id,
-          advertiserId: advertiser_id,
-          lastPing: Date.now(),
-        }
-      }));
+    const onDisconnect = () => {
+      setScreenHeartbeat((prev) => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach((id) => {
+          if (updated[id]?.isActive) {
+            updated[id] = { ...updated[id], isActive: false };
+          }
+        });
+        return updated;
+      });
     };
 
     socket.on("screen_status", onHeartbeat);
-
-    return () => {
-      socket.off("screen_status", onHeartbeat);
-    };
-  }, []);
-
-  /* =========================
-     SOCKET - ROOM + ONLINE UPDATES
-  ========================== */
-  useEffect(() => {
-    if (!user || !usertoken) return;
-    
-    getBookings();
-
-    if (!socket.connected) {
-      socket.connect();
-    }
-
-    const onConnect = () => {
-      console.log("Socket connected for online screen:", socket.id);
-      socket.emit("onlineScreenUpdateRoom", user._id);
-    };
-
-    const onOnlineUpdate = (data) => {
-      if (!data?.booking_id || !data?.screen_id) return;
-
-      const now = Date.now();
-
-      // Update heartbeat tracker
-      setScreenHeartbeat(prev => ({
-        ...prev,
-        [data.screen_id]: {
-          bookingId: data.booking_id,
-          advertiserId: data.advertiser_id,
-          lastPing: now
-        }
-      }));
-    };
-
-    const onDisconnect = () => {
-      console.log("Socket disconnected");
-    };
-
-    socket.on("connect", onConnect);
     socket.on("screen_online_update", onOnlineUpdate);
     socket.on("disconnect", onDisconnect);
 
     return () => {
-      socket.off("connect", onConnect);
+      socket.off("screen_status", onHeartbeat);
       socket.off("screen_online_update", onOnlineUpdate);
       socket.off("disconnect", onDisconnect);
+      Object.values(timeoutRefs.current).forEach(clearTimeout);
     };
+  }, [handleHeartbeat]);
+
+  useEffect(() => {
+    if (!user || !usertoken) return;
+    getBookings();
+
+    if (!socket.connected) socket.connect();
+
+    const onConnect = () => {
+      socket.emit("onlineScreenUpdateRoom", user._id);
+    };
+    socket.on("connect", onConnect);
+
+    return () => socket.off("connect", onConnect);
   }, [user, usertoken]);
 
-  /* =========================
-     TIMEOUT CHECKER - Runs every 2 seconds
-     Checks if heartbeat is stale (>10s old)
-  ========================== */
-  useEffect(() => {
-    const TIMEOUT = 10000; // 10 seconds (heartbeat is every 5s, so 2x buffer)
-    
-    const interval = setInterval(() => {
-      const now = Date.now();
-      
-      setScreenHeartbeat(prev => {
-        const updated = { ...prev };
-        let hasChanges = false;
-
-        // Clean up stale heartbeats
-        Object.keys(updated).forEach(screenId => {
-          const timeSinceLastPing = now - updated[screenId].lastPing;
-          if (timeSinceLastPing > TIMEOUT) {
-            delete updated[screenId];
-            hasChanges = true;
-          }
-        });
-
-        return hasChanges ? updated : prev;
-      });
-    }, 2000); // Check every 2 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  /* =========================
-     FORMAT HELPERS
-  ========================== */
-  const formatTime = (isoString) => {
-    if (!isoString) return 'Invalid time';
-    return new Date(isoString).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
+  const formatTime = (iso) =>
+    new Date(iso).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: true,
     });
-  };
 
-  const formatDate = (isoString) => {
-    if (!isoString) return 'Invalid date';
-    return new Date(isoString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
+  const formatDate = (iso) =>
+    new Date(iso).toLocaleDateString("en-US", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
     });
+
+  const formatDuration = (mins) => {
+    if (mins < 60) return `${mins}m`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m ? `${h}h ${m}m` : `${h}h`;
   };
 
-  /* =========================
-     RENDER
-  ========================== */
+  const getBookingStatus = (booking) => {
+    const screenId = booking?.screen_id?._id;
+    const hb = screenHeartbeat[screenId];
+
+    const isOnline = hb && hb.bookingId === booking._id && hb.isActive;
+
+    let uptime = null;
+    if (isOnline && hb.lastPing) {
+      const secs = Math.floor((Date.now() - hb.lastPing) / 1000);
+      if (secs > 0) {
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        uptime = `${m}m ${s}s`;
+      }
+    }
+
+    return { isOnline, uptime };
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="px-4 py-6 sm:px-6 max-w-4xl mx-auto">
-        <h2 className="text-lg font-semibold text-gray-800 mb-5">Booked Slots</h2>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-8">Live Screen Status</h2>
 
         {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="text-gray-500">Loading bookings...</div>
+          <div className="text-center py-20">
+            <div className="inline-flex items-center gap-3 text-gray-600">
+              <div className="w-6 h-6 border-4 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-lg">Loading bookings...</span>
+            </div>
           </div>
         ) : bookings.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-200">
-            <p className="text-gray-500 text-lg">No bookings found</p>
-            <p className="text-sm text-gray-400 mt-2">This screen has no scheduled ads yet.</p>
+          <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-200">
+            <p className="text-gray-500 text-lg font-medium">No active bookings</p>
+            <p className="text-gray-400 mt-2">Your screens are ready for new campaigns.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {bookings
               .sort((a, b) => new Date(b.start_datetime) - new Date(a.start_datetime))
-              .map((booking, index) => {
-                const startTime = formatTime(booking?.start_datetime);
-                const endTime = formatTime(booking?.end_datetime);
-                const date = formatDate(booking?.start_datetime);
-
-                const screenId = booking?.screen_id?._id;
-                const heartbeat = screenHeartbeat[screenId];
-
-                // CRITICAL: Screen is online ONLY if:
-                // 1. Heartbeat exists for this screen
-                // 2. The heartbeat is for THIS specific booking
-                const isOnline = heartbeat && heartbeat.bookingId === booking._id;
+              .map((booking) => {
+                const { isOnline, uptime } = getBookingStatus(booking);
+                const start = formatTime(booking.start_datetime);
+                const end = formatTime(booking.end_datetime);
+                const date = formatDate(booking.start_datetime);
+                const duration = formatDuration(booking.duration_minutes);
 
                 return (
                   <div
-                    key={index}
+                    key={booking._id}
                     className={`
-                      bg-white rounded-xl shadow-sm border p-5 transition-all duration-300
+                      relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl
                       ${isOnline
-                        ? "border-green-300 ring-1 ring-green-100"
-                        : "border-red-300"
+                        ? "bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-300 ring-4 ring-emerald-100 ring-opacity-40"
+                        : "bg-white border border-gray-200"
                       }
                     `}
                   >
-                    <div className="flex flex-col gap-4">
-                      {/* Top Row: Screen Info + Online Status */}
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 text-lg">
-                            {booking?.screen_id?.screenName}
-                          </h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {booking?.screen_id?.address?.street}, {booking?.screen_id?.address?.city},
-                            {booking?.screen_id?.address?.state}
-                          </p>
-                        </div>
-
-                        {/* ONLINE / OFFLINE BADGE */}
-                        <span
-                          className={`inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-300
-                            ${isOnline
-                              ? "text-green-800 bg-green-100"
-                              : "text-red-800 bg-red-100"
-                            }
-                          `}
-                        >
-                          ● {isOnline ? "ONLINE" : "OFFLINE"}
+                    {/* LIVE Badge */}
+                    {isOnline && (
+                      <div className="absolute top-4 right-4 z-10">
+                        <span className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-emerald-800 bg-emerald-100 rounded-full shadow-md">
+                          <span className="relative flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                          </span>
+                          LIVE NOW
                         </span>
                       </div>
+                    )}
 
-                      {/* Bottom Row: Time Info */}
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 pt-3 border-t border-gray-100">
+                    <div className="p-6">
+                      {/* Screen Name & Location */}
+                      <div className="mb-5">
+                        <h3 className="font-bold text-gray-900 text-xl truncate">
+                          {booking.screen_id?.screenName || "Unnamed Screen"}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          {booking.screen_id?.address?.city}, {booking.screen_id?.address?.state}
+                        </p>
+                      </div>
+
+                      {/* Time & Duration */}
+                      <div className="grid grid-cols-2 gap-5 mb-5 text-sm">
                         <div>
-                          <p className="text-sm text-gray-600">Scheduled Time</p>
-                          <p className="font-bold text-lg text-gray-900">
-                            {startTime} – {endTime}
+                          <p className="text-gray-500 font-medium">Scheduled</p>
+                          <p className="font-bold text-gray-900 text-lg">
+                            {start} – {end}
                           </p>
-                          <p className="text-sm text-gray-500">{date}</p>
+                          <p className="text-xs text-gray-500 mt-1">{date}</p>
                         </div>
-
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600">Duration</p>
-                          <p className="font-medium text-gray-900">
-                            {booking?.duration_minutes} minutes
-                          </p>
+                        <div>
+                          <p className="text-gray-500 font-medium">Duration</p>
+                          <p className="font-bold text-gray-900 text-lg">{duration}</p>
                         </div>
                       </div>
+
+                      {/* Status Row */}
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`text-base font-semibold ${
+                            isOnline ? "text-emerald-700" : "text-gray-600"
+                          }`}
+                        >
+                          {isOnline ? "Currently Playing" : "Offline"}
+                        </span>
+
+                      </div>
+
+                      {/* Advertiser */}
+                      {booking.advertiser_id && (
+                        <div className="mt-5 pt-5 border-t border-gray-200">
+                          <p className="text-xs text-gray-500 uppercase tracking-wider">Advertiser</p>
+                          <p className="text-base font-medium text-gray-800 mt-1 truncate">
+                            {booking.advertiser_id.name || booking.advertiser_id.email || "Unknown"}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -604,14 +306,34 @@ const ScreenStatus = () => {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="px-4 py-6 text-center">
-        <p className="text-xs text-gray-500">
-          Updated: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </p>
+      {/* Fixed Bottom Status Bar */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-center gap-6 text-sm">
+          <div className="flex items-center gap-3">
+            <span
+              className={`relative flex h-3.5 w-3.5 ${
+                socket.connected ? "text-emerald-500" : "text-red-500"
+              }`}
+            >
+              {socket.connected && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              )}
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-current"></span>
+            </span>
+            <span className={socket.connected ? "text-gray-700 font-medium" : "text-gray-500"}>
+              {socket.connected ? "Connected" : "Disconnected"}
+            </span>
+          </div>
+
+          <span className="text-gray-400">•</span>
+
+          <span className="text-gray-500 text-xs">
+            Updated: {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+          </span>
+        </div>
       </footer>
     </div>
-  );a
+  );
 };
 
 export default ScreenStatus;
