@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { socket } from "../../Socket";
 import { Context } from "../Context_holder";
+import axios from "axios";
 
 const AdScreen = () => {
   const { id } = useParams();
@@ -19,6 +20,7 @@ const AdScreen = () => {
   const [Loading, setLoading] = useState(false);
 
   const videoRef = useRef(null);
+
 
 
   const slotBookings = [
@@ -137,6 +139,34 @@ console.log(PlayingScreen,"PlayingScreen");
     }
   };
 
+  const AddPlayingDuration = async (id,duration) => {
+    console.log(id,duration,"....>>>");
+     
+   if(!id || !duration || duration <= 0) return;
+
+
+
+      try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}addplayedDuration/${id}/${duration}`,
+        {},
+        {
+          headers: {
+            Authorization: usertoken
+          }
+        }
+      );
+
+
+      
+
+
+    } catch (error) {
+      
+     
+    } 
+  };
+
   /* =========================
      SOCKET CONNECTION
   ========================== */
@@ -181,32 +211,44 @@ console.log(PlayingScreen,"PlayingScreen");
   /* =========================
      HEARTBEAT - Every 5 seconds
   ========================== */
-  useEffect(() => {
+/* =========================
+     HEARTBEAT - Every 5 seconds
+========================== */
+useEffect(() => {
+  // 🛑 STOP if no active ad is playing
+  if (!id || !PlayingScreen || !PlayingScreen._id) return
 
-    if (!id || !PlayingScreen) return;
 
-    const emitHeartbeat = () => {
-      socket.emit("screen_status", {
-        screen_id: PlayingScreen?.screen_id,
-        booking_id: PlayingScreen._id,
-        advertiser_id: PlayingScreen.advertiser_id,
-      });
-      console.log("emitedf", {
-        screen_id: PlayingScreen?.screen_id,
-        booking_id: PlayingScreen._id,
-        advertiser_id: PlayingScreen.advertiser_id,
-      });
-      
-    };
+ 
 
-    // Emit immediately on mount/change
-    emitHeartbeat();
+
+
+  const emitHeartbeat = () => {
+    // Double check we still have an active ad
+    if (!PlayingScreen || !PlayingScreen?._id) return;
     
-    // Then emit every 5 seconds
-    const interval = setInterval(emitHeartbeat, 5000);
+    socket.emit("screen_status", {
+      screen_id: PlayingScreen?.screen_id,
+      booking_id: PlayingScreen?._id,
+      advertiser_id: PlayingScreen?.advertiser_id,
+    });
 
-    return () => clearInterval(interval);
-  }, [id, PlayingScreen?._id]);
+AddPlayingDuration(PlayingScreen?._id, 5);
+
+  };
+
+  // ⏱️ emit immediately
+  emitHeartbeat();
+
+  // ⏱️ then every 5 seconds
+  const interval = setInterval(emitHeartbeat, 5000);
+
+  return () => clearInterval(interval);
+}, [PlayingScreen?._id]); // This will trigger when PlayingScreen changes to null
+
+
+
+
 
   /* =========================
      PLAYLIST LOGIC
@@ -304,6 +346,10 @@ console.log(PlayingScreen,"PlayingScreen");
   /* =========================
      UI
   ========================== */
+
+
+
+
   return (
     <>
 
@@ -383,23 +429,32 @@ console.log(PlayingScreen,"PlayingScreen");
         )}
 
 
+<div className=" absolute top-[100px] left-2 flex gap-2">
+
+<button className="px-3 py-1 bg-slate-500"  onClick={()=>setPlayingScreen(slotBookings[0])}>
+
+1
+</button>
+<button className="px-3 py-1 bg-slate-500" onClick={()=>setPlayingScreen(slotBookings[1])}>
+
+2
+</button>
+<button className="px-3 py-1 bg-slate-500" onClick={()=>setPlayingScreen(slotBookings[2])}>
+
+3
+</button>
+<button className="px-3 py-1 bg-slate-500" onClick={()=>setPlayingScreen(null)}>
+
+null
+</button>
+
+</div>
 
 
 
 
       </div>
-      <div className="absolute top-[100px] left-0">
-  <button className=" px-3 mr-2 py-2  bg-slate-400" onClick={()=>setPlayingScreen(slotBookings[0])}>
-           1
-          </button>
-           <button className=" px-3 py-2  bg-slate-400" onClick={()=>setPlayingScreen(slotBookings[1])}>
-           2
-          </button>
-
-            <button className=" px-3 py-2  bg-slate-400" onClick={()=>setPlayingScreen(slotBookings[2])}>
-           3
-          </button>
-</div>
+ 
     </>
   );
 };
