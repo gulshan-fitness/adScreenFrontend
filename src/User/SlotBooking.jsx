@@ -73,6 +73,7 @@ const SlotBooking = () => {
     const payload = selectedSlots.map(slot => ({
       slot_id: slot._id,
       screen_id: selectedScreen?._id,
+      screenOwner:selectedScreen?.user_id,
       advertiser_id: user?._id,
       start_datetime: slot.start_datetime,
       end_datetime: slot.end_datetime,
@@ -195,6 +196,7 @@ const SlotBooking = () => {
     formData.append("data", JSON.stringify(rest));
 
     try {
+
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_USER_URL}createBooking`,
         formData,
@@ -218,6 +220,8 @@ const SlotBooking = () => {
     }
   }, [usertoken, notify]);
 
+  console.log(slotBookingPayload,"slotBookingPayload",selectedSlots,selectedScreen?.user_id);
+  
   // Handle payment/booking
   const handlePaymentLater = useCallback(async () => {
     if (slotBookingPayload?.length === 0) return;
