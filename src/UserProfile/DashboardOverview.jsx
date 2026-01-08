@@ -8,11 +8,14 @@ import { SiGoogleads } from "react-icons/si";
 import { MdTrendingUp, MdAttachMoney } from "react-icons/md";
 import { GiReceiveMoney } from "react-icons/gi";
 import { TbDeviceDesktopAnalytics } from "react-icons/tb";
-
+import { useEffect } from "react";
+import { useState } from "react";
+// 
 const DashboardOverview = () => {
-  const { user } = useContext(Context);
+  const { user ,FetchApi,usertoken,getCurrencySymbol} = useContext(Context);
   const navigate = useNavigate();
   const userRole = user?.role || "advertiser";
+  const [wallet,setwallet]=useState(null)
 
   // ============================
   // ⭐ ROLE-BASED DASHBOARD DATA
@@ -70,6 +73,33 @@ const DashboardOverview = () => {
           color: "bg-yellow-100 text-yellow-700",
         },
       ];
+
+useEffect(() => {
+  if (!usertoken || !user) return;
+
+  const fetchWallet = async () => {
+    try {
+      const res = await FetchApi(
+        null,
+        import.meta.env.VITE_USER_URL,
+        "getwallete",
+        user?._id,
+        null,
+        null,
+        usertoken
+      );
+      setwallet(res);
+    } catch (err) {
+      console.error("Error fetching wallet:", err);
+    }
+  };
+
+  fetchWallet();
+}, [user, usertoken]);
+
+
+
+
 
   const transactions = [
     {
@@ -131,6 +161,17 @@ const DashboardOverview = () => {
             <h3 className="text-xl font-bold">{item.value}</h3>
           </div>
         ))}
+
+         <div
+           
+            className="bg-white rounded-xl p-4 shadow hover:shadow-lg transition cursor-pointer"
+          >
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 bg-yellow-100 text-yellow-700`}>
+             <FaWallet size={26} />
+            </div>
+            <p className="text-sm text-gray-500">Wallet Balance</p>
+            <h3 className="text-xl font-bold">{ getCurrencySymbol( wallet?.currency)} {wallet?.walletBalance}</h3>
+          </div>
       </div>
 
       {/* ===========================================

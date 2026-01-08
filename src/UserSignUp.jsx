@@ -3,9 +3,13 @@ import axios from "axios";
 import { FaEye, FaEyeSlash, FaSearch, FaMapMarkerAlt, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import Select from 'react-select'; // Import react-select
 import { Context } from "./Context_holder";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import LocationSearch from "./ReusedComponents/LocationSearch";
+import currencyOptions from "./CurrenciesJson.json";
+
+
 
 export default function UserSignUp() {
   const { setusertoken, setuser, notify, FetchApi } = useContext(Context);
@@ -17,13 +21,26 @@ export default function UserSignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
   const [Role, setRole] = useState("");
+  const [paymentGetCurrency, setPaymentGetCurrency] = useState({ value: "USD", label: "USD - US Dollar" });
+  
+  // Currency options for react-select
+  // const currencyOptions = [
+  //   { value: "USD", label: "USD - US Dollar" },
+  //   { value: "EUR", label: "EUR - Euro" },
+  //   { value: "GBP", label: "GBP - British Pound" },
+  //   { value: "INR", label: "INR - Indian Rupee" },
+  //   { value: "CAD", label: "CAD - Canadian Dollar" },
+  //   { value: "AUD", label: "AUD - Australian Dollar" },
+  //   { value: "JPY", label: "JPY - Japanese Yen" },
+  //   { value: "CNY", label: "CNY - Chinese Yuan" },
+  //   { value: "CHF", label: "CHF - Swiss Franc" },
+  //   { value: "SGD", label: "SGD - Singapore Dollar" },
+  //   { value: "AED", label: "AED - UAE Dirham" },
+  //   { value: "SAR", label: "SAR - Saudi Riyal" },
+  // ];
   
   // Address states
   const [searchText, setSearchText] = useState("");
-  
- 
-  
-  
   
   // Loading states for form submission and API calls
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,8 +55,72 @@ export default function UserSignUp() {
     coordinates: { lat: "", lng: "" },
   });
 
+  // Custom styles for react-select
+  const customStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: "black",
+      borderColor: state.isFocused ? "#FFD700" : "#FFD700",
+      boxShadow: state.isFocused ? "0 0 0 1px #FFD700" : "none",
+      "&:hover": {
+        borderColor: "#FFD700"
+      },
+      minHeight: "44px",
+      borderRadius: "6px",
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: "black",
+      border: "1px solid #FFD700",
+      borderRadius: "6px",
+      zIndex: 9999,
+    }),
+    menuList: (base) => ({
+      ...base,
+      backgroundColor: "black",
+      maxHeight: "200px",
+      borderRadius: "4px",
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? "#1a1a1a" : "black",
+      color: state.isFocused ? "#FFD700" : "#FFD700",
+      "&:active": {
+        backgroundColor: "#1a1a1a",
+      },
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#FFD700",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#FFD700",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#666",
+    }),
+    dropdownIndicator: (base) => ({
+      ...base,
+      color: "#FFD700",
+      "&:hover": {
+        color: "#FFD700",
+      },
+    }),
+    indicatorSeparator: (base) => ({
+      ...base,
+      backgroundColor: "#FFD700",
+    }),
+    clearIndicator: (base) => ({
+      ...base,
+      color: "#FFD700",
+      "&:hover": {
+        color: "#FFD700",
+      },
+    }),
+  };
 
- 
   // Load user data for edit mode
   useEffect(() => {
     if (path === "edituserprofile") {
@@ -65,6 +146,13 @@ export default function UserSignUp() {
         });
         setUser(user);
         setRole(user?.role || "");
+        
+        // Set currency for react-select
+        const userCurrency = user?.PaymentGetcurrency || "USD";
+        const selectedCurrency = currencyOptions.find(option => option.value === userCurrency) || 
+                               { value: "USD", label: "USD - US Dollar" };
+        setPaymentGetCurrency(selectedCurrency);
+        
         setIsLoadingUserData(false);
       }, 500);
     }
@@ -80,7 +168,7 @@ export default function UserSignUp() {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
           inputRef.current && !inputRef.current.contains(event.target)) {
-     
+        // Handle outside click if needed
       }
     };
 
@@ -90,12 +178,6 @@ export default function UserSignUp() {
     };
   }, []);
 
-
-  
-
-  
-
-  
   // Clean up timeout on component unmount
   useEffect(() => {
     return () => {
@@ -104,8 +186,6 @@ export default function UserSignUp() {
       }
     };
   }, []);
-
-  // Get current location using Geolocation API
 
   // Handle form submission
   const handleSubmit = (e) => {
@@ -124,6 +204,13 @@ export default function UserSignUp() {
       return;
     }
 
+    // Validate PaymentGetcurrency
+    if (!paymentGetCurrency) {
+      notify("Payment currency is required", 0);
+      setIsSubmitting(false);
+      return;
+    }
+
     if (!User && path !== "edituserprofile") {
       password = e.target.password.value;
       confirmPassword = e.target.confirmpassword.value;
@@ -133,7 +220,6 @@ export default function UserSignUp() {
         setIsSubmitting(false);
         return;
       }
-      
     }
     
     const data = {
@@ -144,6 +230,7 @@ export default function UserSignUp() {
       businessName: e.target.businessName.value,
       taxId: e.target.taxId.value,
       paymentMethod,
+      PaymentGetcurrency: paymentGetCurrency.value, // Use the value from react-select
       bankDetails:
         paymentMethod === "bank_transfer"
           ? {
@@ -151,6 +238,9 @@ export default function UserSignUp() {
               bankName: e.target.bankName?.value || "",
               ifscCode: e.target.ifscCode?.value || "",
               accountHolder: e.target.accountHolder?.value || "",
+              sortcode: e.target.sortCode?.value || "",
+              IBAN: e.target.iban?.value || "",
+              SWIFT: e.target.swift?.value || "",
             }
           : {},
       address,
@@ -178,8 +268,6 @@ export default function UserSignUp() {
           e.target.reset();
           setPhone(null);
           setSearchText("");
-         
-        
           setAddress({
             street: "",
             city: "",
@@ -188,6 +276,7 @@ export default function UserSignUp() {
             country: "",
             coordinates: { lat: "", lng: "" },
           });
+          setPaymentGetCurrency({ value: "USD", label: "USD - US Dollar" }); // Reset currency
           
           localStorage.setItem("user", JSON.stringify(data.user));
           localStorage.setItem("usertoken", data.token);
@@ -237,10 +326,10 @@ export default function UserSignUp() {
       
       <div className="w-full max-w-2xl mx-auto p-4 rounded-md shadow-md bg-black border border-[#FFD700] relative">
         {/* Form Loading Overlay */}
-        {( isSubmitting) && (
+        {isSubmitting && (
           <div className="absolute inset-0 bg-black bg-opacity-80 z-10 rounded-md flex items-center justify-center">
             <div className="text-center">
-            
+              {/* Loading spinner */}
             </div>
           </div>
         )}
@@ -294,48 +383,31 @@ export default function UserSignUp() {
           
           {/* Address Section */}
           <div className="col-span-1 md:col-span-2 border border-[#FFD700] p-3 rounded-md relative">
-            {/* Address Loading Overlay */}
-            {( isSubmitting) && (
-              <div className="absolute inset-0 bg-black bg-opacity-70 z-10 rounded-md flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#FFD700] border-solid mx-auto mb-2"></div>
-                  <p className="text-[#FFD700] text-xs">Loading...</p>
-                </div>
-              </div>
-            )}
-            
             <h3 className="text-[#FFD700] font-semibold text-sm mb-2">Address *</h3>
             
-            {/* Address Search with Perfect Dropdown */}
+            {/* Address Search */}
             <div className="mb-3 relative">
               <label className="text-[#FFD700] text-xs mb-1 block">Search Address</label>
-              
-
               <LocationSearch
-  value={searchText}
-  onChange={setSearchText}
-  disabled={isSubmitting}
-  inputClass="border border-[#FFD700] bg-black text-[#FFD700]"
-  containerClass="relative"
-  onSelect={(location) => {
-    setAddress({
-      street: location.street,
-      city: location.city,
-      state: location.state,
-      zipCode: location.zipCode,
-      country: location.country,
-      coordinates: location.coordinates,
-    });
-  }}
-/>
-
-
-
+                value={searchText}
+                onChange={setSearchText}
+                disabled={isSubmitting}
+                inputClass="border border-[#FFD700] bg-black text-[#FFD700]"
+                containerClass="relative"
+                onSelect={(location) => {
+                  setAddress({
+                    street: location.street,
+                    city: location.city,
+                    state: location.state,
+                    zipCode: location.zipCode,
+                    country: location.country,
+                    coordinates: location.coordinates,
+                  });
+                }}
+              />
+            </div>
             
-            {/* Current Location Button */}
-         
-            
-            {/* Address Preview - Improved UI */}
+            {/* Address Preview */}
             {address.street && (
               <div className="mt-4 p-3 border border-[#FFD700] rounded-md bg-gradient-to-r from-[#1a1a1a] to-black">
                 <div className="flex items-center mb-2">
@@ -367,8 +439,6 @@ export default function UserSignUp() {
               </div>
             )}
           </div>
-
-          </div>
           
           {/* Role */}
           <div>
@@ -385,6 +455,29 @@ export default function UserSignUp() {
               <option value="advertiser">Advertiser</option>
               <option value="screen_owner">Screen Owner</option>
             </select>
+          </div>
+          
+          {/* Payment Get Currency - React Select Version */}
+          <div>
+            <label className="text-[#FFD700] text-sm"> Currency In Which Want To Get Payment *</label>
+            <Select
+              value={paymentGetCurrency}
+              onChange={setPaymentGetCurrency}
+              options={currencyOptions}
+              styles={customStyles}
+              isSearchable={true}
+              isDisabled={isSubmitting}
+              placeholder="Select currency..."
+              className="react-select-container"
+              classNamePrefix="react-select"
+              required
+            />
+            <input
+              type="hidden"
+              name="paymentGetCurrency"
+              value={paymentGetCurrency?.value || ""}
+              required
+            />
           </div>
           
           {/* Business Name */}
@@ -425,57 +518,95 @@ export default function UserSignUp() {
               disabled={isSubmitting}
             >
               <option value="bank_transfer">Bank Transfer</option>
-              <option value="paypal">PayPal</option>
-              <option value="stripe">Stripe</option>
             </select>
           </div>
           
           {/* Bank Details */}
           {paymentMethod === "bank_transfer" && (
-            <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-2 border border-[#FFD700] p-3 rounded-md">
-              <div>
-                <input
-                  type="text"
-                  name="accountNumber"
-                  placeholder="Account Number *"
-                  className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700]"
-                  defaultValue={User?.bankDetails?.accountNumber}
-                  required={paymentMethod === "bank_transfer"}
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  name="bankName"
-                  defaultValue={User?.bankDetails?.bankName}
-                  placeholder="Bank Name *"
-                  className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700]"
-                  required={paymentMethod === "bank_transfer"}
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  name="ifscCode"
-                  defaultValue={User?.bankDetails?.ifscCode}
-                  placeholder="IFSC Code *"
-                  className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700]"
-                  required={paymentMethod === "bank_transfer"}
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  name="accountHolder"
-                  defaultValue={User?.bankDetails?.accountHolder}
-                  placeholder="Account Holder Name *"
-                  className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700]"
-                  required={paymentMethod === "bank_transfer"}
-                  disabled={isSubmitting}
-                />
+            <div className="col-span-1 md:col-span-2 border border-[#FFD700] p-3 rounded-md">
+              <h4 className="text-[#FFD700] font-semibold text-sm mb-3">Bank Details</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[#FFD700] text-xs">Account Number *</label>
+                  <input
+                    type="text"
+                    name="accountNumber"
+                    placeholder="Account Number"
+                    className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700] mt-1"
+                    defaultValue={User?.bankDetails?.accountNumber}
+                    required={paymentMethod === "bank_transfer"}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div>
+                  <label className="text-[#FFD700] text-xs">Bank Name *</label>
+                  <input
+                    type="text"
+                    name="bankName"
+                    defaultValue={User?.bankDetails?.bankName}
+                    placeholder="Bank Name"
+                    className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700] mt-1"
+                    required={paymentMethod === "bank_transfer"}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div>
+                  <label className="text-[#FFD700] text-xs">IFSC Code </label>
+                  <input
+                    type="text"
+                    name="ifscCode"
+                    defaultValue={User?.bankDetails?.ifscCode}
+                    placeholder="IFSC Code"
+                    className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700] mt-1"
+                 
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div>
+                  <label className="text-[#FFD700] text-xs">Account Holder Name *</label>
+                  <input
+                    type="text"
+                    name="accountHolder"
+                    defaultValue={User?.bankDetails?.accountHolder}
+                    placeholder="Account Holder Name"
+                    className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700] mt-1"
+                    required={paymentMethod === "bank_transfer"}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div>
+                  <label className="text-[#FFD700] text-xs">Sort Code</label>
+                  <input
+                    type="text"
+                    name="sortCode"
+                    defaultValue={User?.bankDetails?.sortcode}
+                    placeholder="Sort Code"
+                    className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700] mt-1"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div>
+                  <label className="text-[#FFD700] text-xs">IBAN</label>
+                  <input
+                    type="text"
+                    name="iban"
+                    defaultValue={User?.bankDetails?.IBAN}
+                    placeholder="IBAN"
+                    className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700] mt-1"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-[#FFD700] text-xs">SWIFT/BIC Code</label>
+                  <input
+                    type="text"
+                    name="swift"
+                    defaultValue={User?.bankDetails?.SWIFT}
+                    placeholder="SWIFT/BIC Code"
+                    className="w-full border border-[#FFD700] p-2 bg-black text-[#FFD700] mt-1"
+                    disabled={isSubmitting}
+                  />
+                </div>
               </div>
             </div>
           )}
