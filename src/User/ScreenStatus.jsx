@@ -115,6 +115,23 @@ const ScreenStatus = () => {
     return () => clearInterval(checkInterval);
   }, []);
 
+
+  useEffect(() => {
+    if (!user || !usertoken) return;
+    getBookings();
+
+    if (!socket.connected) socket.connect();
+
+    const onConnect = () => {
+      socket.emit("onlineScreenUpdateRoom", user._id);
+      
+    };
+    socket.on("connect", onConnect);
+
+    return () => socket.off("connect", onConnect);
+  }, [user, usertoken]);
+
+
   useEffect(() => {
     if (!socket.connected) socket.connect();
 
@@ -145,20 +162,7 @@ const ScreenStatus = () => {
     };
   }, [handleHeartbeat]);
 
-  useEffect(() => {
-    if (!user || !usertoken) return;
-    getBookings();
-
-    if (!socket.connected) socket.connect();
-
-    const onConnect = () => {
-      socket.emit("onlineScreenUpdateRoom", user._id);
-    };
-    socket.on("connect", onConnect);
-
-    return () => socket.off("connect", onConnect);
-  }, [user, usertoken]);
-
+  
   const formatTime = (iso) =>
     new Date(iso).toLocaleTimeString("en-US", {
       hour: "2-digit",
