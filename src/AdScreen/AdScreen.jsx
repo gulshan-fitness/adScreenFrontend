@@ -23,77 +23,57 @@ const AdScreen = () => {
 
 
 
-  const slotBookings = [
-  {
-    "_id": "69521bc5442a917031c9d0e8",
-    "slot_id": "69521b82442a917031c9d0dc",
-    "screen_id": "694a3fb0016cf2323ae9b896",
-    "advertiser_id": "693bb234688f683288eaeb9b",
-    "start_datetime": "2026-01-02T11:08:00.000Z",
-    "end_datetime": "2026-01-02T11:09:00.000Z",
-    "duration_minutes": 30,
-    "price": 200,
-    "adfiles": [
-      "https://res.cloudinary.com/ddti3nlbr/video/upload/v1766988738/slotFiles/1766988737678_97_AQMalpgAPHxiPanTRKl3llPgiPEiwjTho6Z4IyY5v3xVLRd7RF-FmUngdN8KQsEWs5lRYJwk9zxgIesJynXP0VV0-VEED.mp4"
-    ],
-    "qrcode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHQAAAB0CAYAAABUmhYnAAAAAklEQVR4AewaftIAAALBSURBVO3BQQ7bWAwFwX6E7n/lniy5+oAg2RMzrIp/sMYo1ijFGqVYoxRrlGKNUqxRijVKsUYp1ijFGqVYoxRrlGKNUqxRijXKxUNJ+CaVkyScqNyRhG9SeaJYoxRrlGKNcvEylTcl4SQJJyonSehUTlTelIQ3FWuUYo1SrFEuPiwJd6jcoXKShE6lU3kiCXeofFKxRinWKMUapVijXGyRhDuS0KmcJKFTOUnCicqJyonKJxVrlGKNUqxRLh5KwjepnCThm1TuSMKJypuKNUqxRinWKBcvU+nuUOlUTlROktCpnCThJAmdSqdyh0qXhC4Jncodi4o1SrFGKdYok6icqJwk4USlU+mScKLyScUapVijFGuUiw9Lwjc8odKpdEnoVO5IwpuKNUqxRinWKBcPqXRJ6FSeSEKncqJykvJEJEn6AAAFy0lEQVREEr5JpUvCJxVrlGKNUqxRLl6WhDcl4SQJnUqXhE6lU+mScKLyRLFGKdYoxRrl4mUqdyThJAmdSpdFlROVk4U3JXFZsUYp1ijFGuXiw5LwTUm4Q6VLQpciid+WXFatUYo1SrFGufiwJJwk4Y4kdConSegWTm3aYnFH0VvFGqVYoxRrlIsnVE6S0KmcqJyo3KHSJeGOVVvcdq1YoxRrlGKNEv9gAElUvVWsUYo1SrFGuXgoCd+k0qncodIloVsk8duSq9ZavFGsUYo1SrFGiX+wTk4P8EqxRinWKMUa5eKhJHyTykn2JbHJ4rZFJ5NUHyrWKMUapVijXPwDqL7Q/1P1T6VYoxRrlGKNEv9gYapvKdYoxRqlWKMUa5RijVKsUYo1SrFGKdYoxRqlWKMUa5RijVKsUYo1SrFGKdYo/wKauPWLp8A8qAAAAABJRU5ErkJggg==",
-    "redirectlink": "sjhvdjs",
-    "currency": "INR",
-    "booking_status": "completed",
-    "payment_status": "paid",
-    "approved": true,
-    "createdAt": "2025-12-29T06:12:21.426Z",
-    "updatedAt": "2026-01-02T11:09:00.008Z",
-    "__v": 0,
-    "transaction_id": "6957a6a3719bf2e61a74a551"
-  },
-  {
-    "_id": "695255daee9c36e63f0f753b",
-    "slot_id": "69521b98442a917031c9d0df",
-    "screen_id": "694a3fb0016cf2323ae9b896",
-    "advertiser_id": "693bb234688f683288eaeb9b",
-    "start_datetime": "2026-01-02T11:09:00.000Z",
-    "end_datetime": "2026-01-02T11:10:00.000Z",
-    "duration_minutes": 30,
-    "price": 300,
-    "adfiles": [
-      "https://res.cloudinary.com/ddti3nlbr/image/upload/v1765533945/College_Banner/1765533945210_547_images.png"
-    ],
-    "qrcode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHQAAAB0CAYAAABUmhYnAAAAAklEQVR4AewaftIAAALBSURBVO3BQQ7bWAwFwX6E7n/lniy5+oAg2RMzrIp/sMYo1ijFGqVYoxRrlGKNUqxRijVKsUYp1ijFGqVYoxRrlGKNUqxRijXKxUNJ+CaVkyScqNyRhG9SeaJYoxRrlGKNcvEylTcl4SQJJyonSehUTlTelIQ3FWuUYo1SrFEuPiwJd6jcoXKShE6lU3kiCXeofFKxRinWKMUapVijXGyRhDuS0KmcJKFTOUnCicqJyonKJxVrlGKNUqxRLh5KwjepnCThm1TuSMKJypuKNUqxRinWKBcvU+nuUOlUTlROktCpnCThJAmdSqdyh0qXhC4Jncodi4o1SrFGKdYok6icqJwk4USlU+mScKLyScUapVijFGuUiw9Lwjc8odKpdEnoVO5IwpuKNUqxRinWKBcPqXRJ6FSeSEKncqJykvJEJEn6AAAFy0lEQVTEEr5JpUvCJxVrlGKNUqxRLl6WhDcl4SQJnUqXhE6lU+mScKLyRLFGKdYoxRrl4mUqdyThJAmdSpdFlROVk4U3JXFZsUYp1ijFGuXiw5LwTUm4Q6VLQpciid+WXFatUYo1SrFGufiwJJwk4Y4kdConSegWTm3aYnFH0VvFGqVYoxRrlIsnVE6S0KmcqJyo3KHSJeGOVVvcdq1YoxRrlGKNEv9gAElUvVWsUYo1SrFGuXgoCd+k0qncodIloVsk8duSq9ZavFGsUYo1SrFGiX+wTk4P8EqxRinWKMUa5eKhJHyTykn2JbHJ4rZFJ5NUHyrWKMUapVijXPwDqL7Q/1P1T6VYoxRrlGKNEv9gYapvKdYoxRqlWKMUa5RijVKsUYo1SrFGKdYoxRqlWKMUa5RijVKsUYo1SrFGKdYo/wKauPWLp8A8qAAAAABJRU5ErkJggg==",
-    "redirectlink": "sjhvdjs",
-    "currency": "INR",
-    "booking_status": "completed",
-    "payment_status": "paid",
-    "approved": true,
-    "createdAt": "2025-12-29T06:12:21.426Z",
-    "updatedAt": "2026-01-02T11:10:00.020Z",
-    "__v": 0,
-    "transaction_id": "6957a6be719bf2e61a74a55f"
-  },
-  {
-    "_id": "6957775b719bf2e61a74a264",
-    "slot_id": "695776f9719bf2e61a74a25f",
-    "screen_id": "69424ca896389f65937e0819",
-    "advertiser_id": "693bb234688f683288eaeb9b",
-    "start_datetime": "2026-01-02T11:08:00.000Z",
-    "end_datetime": "2026-01-02T11:10:00.000Z",
-    "duration_minutes": 30,
-    "price": 400,
-    "adfiles": [
-      "https://res.cloudinary.com/ddti3nlbr/image/upload/v1767339865/slotFiles/1767339865773_132_366421a.avif"
-    ],
-    "qrcode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHQAAAB0CAYAAABUmhYnAAAAAklEQVR4AewaftIAAAK3SURBVO3BQW7sWAwEwSxC979yjpdcPUCQusfmZ0T8wRqjWKMUa5RijVKsUYo1SrFGKdYoxRqlWKMUa5RijVKsUYo1SrFGKdYoFw8l4ZtU7khCp3JHEr5J5YlijVKsUYo1ysXLVN6UhDuS0Kl0SThROVF5UxLeVKxRijVKsUa5+LAk3KFyRxJOknCi8kQS7lD5pGKNUqxRijXKxT9GZbJijVKsUYo1ysVwKidJ6FT+smKNUqxRijXKxYepfJNKl4QTlSdUfpNijVKsUYo1ysXLkvCbqXRJ6FROkvCbFWuUYo1SrFEuHlL5y1ROVP6SYo1SrFGKNcrFQ0noVLokvEmlU7kjCZ3KSRLepPJJxRqlWKMUa5T4gxcl4Q6VO5JwonKShCdUnkjCicoTxRqlWKMUa5SLD1M5SUKn0iXhRKVLwolKl4ROpUtCl4ROpUvCHSpvKtYoxRqlWKPEH3xQEjqVLgknKidJ+CaVkyQ8ofJEsUYp1ijFGuXiZUnoVLoknKh0SThR6ZLQqZwkoVM5SUKn0qmcJKFTeVOxRinWKMUa5eJlKicqd6icJOEkCZ3KJyWhU+lUuiR0Kk8Ua5RijVKsUeIPHkjCN6k8kYROpUtCp3KShCdU3lSsUYo1SrFGuXiZypuScJKEE5VO5UTlJAknKl0STpLQqTxRrFGKNUqxRrn4sCTcofKEykkSOpUuCZ1Kp9Il4Q6VTyrWKMUapVijXPzjknCShE6lU+mS0Kl8U7FGKdYoxRrl4h+j0iWhU+mS0CWhU+lU/k/FGqVYoxRrlIsPU/kklS4JTyThROUkCZ3KNxVrlGKNUqxRLl6WhG9KwonKSRI6lZMkdCqdSpeEE5U3FWuUYo1SrFHiD9YYxRqlWKMUa5RijVKsUYo1SrFGKdYoxRqlWKMUa5RijVKsUYo1SrFG+Q/DiB/TOksfiAAAAABJRU5ErkJggg==",
-    "redirectlink": "gym",
-    "currency": "INR",
-    "booking_status": "completed",
-    "payment_status": "paid",
-    "approved": true,
-    "createdAt": "2026-01-02T07:44:27.535Z",
-    "updatedAt": "2026-01-02T11:10:00.016Z",
-    "__v": 0,
-    "transaction_id": "6957a682719bf2e61a74a543"
-  }
-];
+  const slotBookings = [ 
+    {
+            "_id": "695f5a226ea747743cb7ec0a",
+            "slot_id": "695f59616ea747743cb7ebfe",
+            "screen_id": "69424ca896389f65937e0819",
+            "screenOwner": "693bbd5b688f683288eaebb4",
+            "advertiser_id": "693bb234688f683288eaeb9b",
+            "start_datetime": "2026-01-12T06:11:00.000Z",
+            "end_datetime": "2026-01-12T06:12:00.000Z",
+            "duration_minutes": 1,
+            "playedDuration": 0.9166666666666667,
+            "price": 199.99,
+            "adfiles": [
+                "https://res.cloudinary.com/ddti3nlbr/image/upload/v1767856667/slotFiles/1767856672854_70_366421a.avif"
+            ],
+            "qrcode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHQAAAB0CAYAAABUmhYnAAAAAklEQVR4AewaftIAAAK4SURBVO3BQY7cQAwEwSxC//9yeo88NSBIsx7TjIg/WGMUa5RijVKsUYo1SrFGKdYoxRqlWKMUa5RijVKsUYo1SrFGKdYoxRrl4qEk/CaVkyR0Kl0SOpWTJPwmlSeKNUqxRinWKBcvU3lTEu5QOVF5QuVNSXhTsUYp1ijFGuXiw5Jwh8odSehUuiTcoXJHEu5Q+aRijVKsUYo1ysV/TmWSYo1SrFGKNcrFcCpdErokdCr/smKNUqxRijXKxYepfBOVLglPqHyTYo1SrFGKNcrFy5LwTZLQqTyRhG9WrFGKNUqxRrl4SOWbqXRJuEPlX1KsUYo1SrFGuXgoCZ1Kl4Q3qXQqXRJOVLoknCThTSqfVKxRijVKsUa5eFkSTlSeSEKn0ql0SbgjCZ1Kl4QTlS4JXRJOVJ4o1ijFGqVYo1y8TKVLwh1J+KQkdCp3qJwkoVPpktCpvKlYoxRrlGKNcvGyJJwkoVM5UemS0CWhUzlROUlCp3KShJMkdCpdEjqVJ4o1SrFGKdYoFx+m0iWhS8JJEk5UuiScJKFT6VS6JJyofJNijVKsUYo1ysVDKneovCkJJypdErok3KHSJeEOlU8q1ijFGqVYo8QfPJCE36RyRxI6lS4JnUqXhE7ljiScqLypWKMUa5RijXLxMpU3JeEkCScqXRJOktCpdEl4QqVLQqfyRLFGKdYoxRrl4sOScIfKEypdEjqVLgmdSpeEO1T+pmKNUqxRijXKxTBJ+CZJ6FQ6lTcVa5RijVKsUS6GUemS0CWhU+mScKJyh8pvKtYoxRqlWKNcfJjKJ6mcqNyhckcS7lD5pGKNUqxRijXKxcuS8JuScKLSJaFTuSMJJyonSehU3lSsUYo1SrFGiT9YYxRrlGKNUqxRijVKsUYp1ijFGqVYoxRrlGKNUqxRijVKsUYp1ijFGuUPVTAL/JoFM/sAAAAASUVORK5CYII=",
+            "redirectlink": "jsdbkjsdnk",
+            "currency": "INR",
+            "booking_status": "completed",
+            "payment_status": "paid",
+            "approved": true,
+            "createdAt": "2026-01-08T07:17:54.757Z",
+            "updatedAt": "2026-01-12T06:12:00.017Z",
+            "__v": 0,
+            "transaction_id": "69648f82ed5bfa8e6653f96d"
+        },
+        {
+            "_id": "695f5a4f6ea747743cb7ec11",
+            "slot_id": "695f59ea6ea747743cb7ec04",
+            "screen_id":"694a3fb0016cf2323ae9b896",
+            "screenOwner": "693bbd5b688f683288eaebb4",
+            "advertiser_id": "693bb234688f683288eaeb9b",
+            "start_datetime": "2026-01-12T06:10:00.000Z",
+            "end_datetime": "2026-01-12T06:11:00.000Z",
+            "duration_minutes": 1,
+            "playedDuration": 0.75,
+            "price": 300,
+            "adfiles": [
+                "https://res.cloudinary.com/ddti3nlbr/image/upload/v1767856710/slotFiles/1767856710523_460_web-development.png"
+            ],
+            "qrcode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHQAAAB0CAYAAABUmhYnAAAAAklEQVR4AewaftIAAAK2SURBVO3BQW7sWAwEwSxC979yjpdcPUCQur/NYUT8wRqjWKMUa5RijVKsUYo1SrFGKdYoxRqlWKMUa5RijVKsUYo1SrFGKdYoFw8l4ZtUuiS8SaVLwjepPFGsUYo1SrFGuXiZypuS8CaVJ1TelIQ3FWuUYo1SrFEuPiwJd6jcodIloVPpktCpPJGEO1Q+qVijFGuUYo1y8ccl4YkkdCp/WbFGKdYoxRrl4o9T6ZJwh8okxRqlWKMUa5SLD1P5zZLQqdyh8psUa5RijVKsUS5eloRvSkKn0iWhU+mScEcSfrNijVKsUYo1ysVDKr9JEjqVLgl3qPwlxRqlWKMUa5SLh5LQqXRJOFHpknCHykkSnkhCp3KShE6lS8KJyhPFGqVYoxRrlIsvU+mS0KmcJOEOlS4JJ0k4SUKncodKl4Q3FWuUYo1SrFHiD16UhDtUuiR8k8qbkvCEyhPFGqVYoxRrlIuXqZwk4Q6VkyScqHRJuCMJJyonKidJeFOxRinWKMUaJf7gg5LQqdyRhBOVkyR0Kl0SOpWTJJyo/EvFGqVYoxRrlPiDPywJJypdEjqVkyR0Kl0SnlB5U7FGKdYoxRrl4qEkfJPKiUqXhJMkdCqdSpeEJ1Q+qVijFGuUYo1y8TKVNyXhCZU3qXRJuCMJJypPFGuUYo1SrFEuPiwJd6jcodIloVM5ScIdKp1Kl4R/qVijFGuUYo1y8ccloVPpknCicpKELgmdyolKl4RO5U3FGqVYoxRrlIv/GZUuCZ3KicqJSpeETuWTijVKsUYp1igXH6bySSpPqHRJ6FROktCpdConSehUnijWKMUapVijXLwsCd+UhBOVNyWhUzlJQqfSqbypWKMUa5RijRJ/sMYo1ijFGqVYoxRrlGKNUqxRijVKsUYp1ijFGqVYoxRrlGKNUqxRijXKf4lfE+VevTBkAAAAAElFTkSuQmCC",
+            "redirectlink": "snkdnsk",
+            "currency": "USD",
+            "booking_status": "completed",
+            "payment_status": "paid",
+            "approved": true,
+            "createdAt": "2026-01-08T07:18:39.652Z",
+            "updatedAt": "2026-01-12T06:11:00.014Z",
+            "__v": 0,
+            "transaction_id": "69648f70ed5bfa8e6653f95f"
+        }];
 
 
 
@@ -223,19 +203,24 @@ useEffect(() => {
 
 
 
-  const emitHeartbeat = () => {
-    // Double check we still have an active ad
-    if (!PlayingScreen || !PlayingScreen?._id) return;
-    
-    socket.emit("screen_status", {
-      screen_id: PlayingScreen?.screen_id,
-      booking_id: PlayingScreen?._id,
-      advertiser_id: PlayingScreen?.advertiser_id,
-    });
+ const emitHeartbeat = () => {
+  if (!PlayingScreen || !PlayingScreen?._id) return;
+  
+  // Make sure we're using the screen's _id, not the entire screen object
+  const screenId = PlayingScreen.screen_id?._id || PlayingScreen.screen_id;
+  
+  socket.emit("screen_status", {
+    screen_id: screenId, // This should be a string ID
+    booking_id: PlayingScreen?._id,
+    advertiser_id: PlayingScreen?.advertiser_id,
+  });
 
-AddPlayingDuration(PlayingScreen?._id, 5);
+  AddPlayingDuration(PlayingScreen?._id, 5);
 
-  };
+
+  console.log("emitig every 5 sec.");
+  
+};
 
   // ⏱️ emit immediately
   emitHeartbeat();

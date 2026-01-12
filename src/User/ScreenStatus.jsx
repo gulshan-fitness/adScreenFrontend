@@ -36,64 +36,66 @@ const ScreenStatus = () => {
     }
   };
 
-  const handleHeartbeat = useCallback((data) => {
-    const { screen_id, booking_id, advertiser_id } = data;
-    if (!screen_id || !booking_id) return;
+ const handleHeartbeat = useCallback((data) => {
+  const { screen_id, booking_id, advertiser_id } = data;
+  if (!screen_id || !booking_id) return;
 
-    const now = Date.now();
+  console.log("📡 Heartbeat received:", { screen_id, booking_id, advertiser_id }); // Add this for debugging
 
-    if (timeoutRefs.current[screen_id]) {
-      clearTimeout(timeoutRefs.current[screen_id]);
-    }
+  const now = Date.now();
 
-    const previousBookingId = lastBookingRef.current[screen_id];
-    lastBookingRef.current[screen_id] = booking_id;
+  if (timeoutRefs.current[screen_id]) {
+    clearTimeout(timeoutRefs.current[screen_id]);
+  }
 
-    heartbeatRef.current = {
-      ...heartbeatRef.current,
-      [screen_id]: {
-        bookingId: booking_id,
-        advertiserId: advertiser_id,
-        lastPing: now,
-        isActive: true,
-      },
-    };
+  const previousBookingId = lastBookingRef.current[screen_id];
+  lastBookingRef.current[screen_id] = booking_id;
 
-    if (previousBookingId && previousBookingId !== booking_id) {
-      setScreenHeartbeat((prev) => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach((key) => {
-          if (updated[key]?.bookingId === previousBookingId) {
-            updated[key] = { ...updated[key], isActive: false };
-          }
-        });
-        return updated;
-      });
-    }
+  heartbeatRef.current = {
+    ...heartbeatRef.current,
+    [screen_id]: {
+      bookingId: booking_id,
+      advertiserId: advertiser_id,
+      lastPing: now,
+      isActive: true,
+    },
+  };
 
-    setScreenHeartbeat((prev) => ({
-      ...prev,
-      [screen_id]: {
-        bookingId: booking_id,
-        advertiserId: advertiser_id,
-        lastPing: now,
-        isActive: true,
-      },
-    }));
-
-    timeoutRefs.current[screen_id] = setTimeout(() => {
-      setScreenHeartbeat((prev) => {
-        if (!prev[screen_id]) return prev;
-        if (Date.now() - prev[screen_id].lastPing >= 10000) {
-          return {
-            ...prev,
-            [screen_id]: { ...prev[screen_id], isActive: false },
-          };
+  if (previousBookingId && previousBookingId !== booking_id) {
+    setScreenHeartbeat((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((key) => {
+        if (updated[key]?.bookingId === previousBookingId) {
+          updated[key] = { ...updated[key], isActive: false };
         }
-        return prev;
       });
-    }, 10000);
-  }, []);
+      return updated;
+    });
+  }
+
+  setScreenHeartbeat((prev) => ({
+    ...prev,
+    [screen_id]: {
+      bookingId: booking_id,
+      advertiserId: advertiser_id,
+      lastPing: now,
+      isActive: true,
+    },
+  }));
+
+  timeoutRefs.current[screen_id] = setTimeout(() => {
+    setScreenHeartbeat((prev) => {
+      if (!prev[screen_id]) return prev;
+      if (Date.now() - prev[screen_id].lastPing >= 10000) {
+        return {
+          ...prev,
+          [screen_id]: { ...prev[screen_id], isActive: false },
+        };
+      }
+      return prev;
+    });
+  }, 10000);
+}, []);
 
   useEffect(() => {
     const checkInterval = setInterval(() => {
@@ -117,13 +119,18 @@ const ScreenStatus = () => {
 
 
   useEffect(() => {
+
     if (!user || !usertoken) return;
+
     getBookings();
 
     if (!socket.connected) socket.connect();
+    
+console.log("connnect");
 
     const onConnect = () => {
       socket.emit("onlineScreenUpdateRoom", user._id);
+      
       
     };
     socket.on("connect", onConnect);
@@ -132,35 +139,42 @@ const ScreenStatus = () => {
   }, [user, usertoken]);
 
 
-  useEffect(() => {
-    if (!socket.connected) socket.connect();
+useEffect(() => {
+  if (!socket.connected) socket.connect();
 
-    const onHeartbeat = (data) => handleHeartbeat(data);
-    const onOnlineUpdate = (data) => handleHeartbeat(data);
+  const onHeartbeat = (data) => {
+    console.log("📡 screen_status event received:", data);
+    handleHeartbeat(data);
+  };
+  
+  const onOnlineUpdate = (data) => {
+    console.log("📡 screen_online_update event received:", data);
+    handleHeartbeat(data);
+  };
 
-    const onDisconnect = () => {
-      setScreenHeartbeat((prev) => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach((id) => {
-          if (updated[id]?.isActive) {
-            updated[id] = { ...updated[id], isActive: false };
-          }
-        });
-        return updated;
+  const onDisconnect = () => {
+    setScreenHeartbeat((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((id) => {
+        if (updated[id]?.isActive) {
+          updated[id] = { ...updated[id], isActive: false };
+        }
       });
-    };
+      return updated;
+    });
+  };
 
-    socket.on("screen_status", onHeartbeat);
-    socket.on("screen_online_update", onOnlineUpdate);
-    socket.on("disconnect", onDisconnect);
+  socket.on("screen_status", onHeartbeat);
+  socket.on("screen_online_update", onOnlineUpdate);
+  socket.on("disconnect", onDisconnect);
 
-    return () => {
-      socket.off("screen_status", onHeartbeat);
-      socket.off("screen_online_update", onOnlineUpdate);
-      socket.off("disconnect", onDisconnect);
-      Object.values(timeoutRefs.current).forEach(clearTimeout);
-    };
-  }, [handleHeartbeat]);
+  return () => {
+    socket.off("screen_status", onHeartbeat);
+    socket.off("screen_online_update", onOnlineUpdate);
+    socket.off("disconnect", onDisconnect);
+    Object.values(timeoutRefs.current).forEach(clearTimeout);
+  };
+}, [handleHeartbeat]);
 
   
   const formatTime = (iso) =>
@@ -183,25 +197,33 @@ const ScreenStatus = () => {
     const m = mins % 60;
     return m ? `${h}h ${m}m` : `${h}h`;
   };
+const getBookingStatus = (booking) => {
+  // Make sure we're comparing the same thing
+  const screenId = booking?.screen_id?._id;
+  const hb = screenHeartbeat[screenId];
 
-  const getBookingStatus = (booking) => {
-    const screenId = booking?.screen_id?._id;
-    const hb = screenHeartbeat[screenId];
+  console.log("📊 Checking status:", { 
+    screenId, 
+    bookingId: booking._id, 
+    hbBookingId: hb?.bookingId,
+    isActive: hb?.isActive 
+  }); // Add this for debugging
 
-    const isOnline = hb && hb.bookingId === booking._id && hb.isActive;
+  // Compare booking IDs directly
+  const isOnline = hb && hb.bookingId === booking._id && hb.isActive;
 
-    let uptime = null;
-    if (isOnline && hb.lastPing) {
-      const secs = Math.floor((Date.now() - hb.lastPing) / 1000);
-      if (secs > 0) {
-        const m = Math.floor(secs / 60);
-        const s = secs % 60;
-        uptime = `${m}m ${s}s`;
-      }
+  let uptime = null;
+  if (isOnline && hb.lastPing) {
+    const secs = Math.floor((Date.now() - hb.lastPing) / 1000);
+    if (secs > 0) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      uptime = `${m}m ${s}s`;
     }
+  }
 
-    return { isOnline, uptime };
-  };
+  return { isOnline, uptime };
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
