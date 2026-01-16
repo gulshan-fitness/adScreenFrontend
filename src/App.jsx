@@ -56,6 +56,7 @@ import MyBookingsPage from "./SlotBooking/BookingList";
 import AdScreen from "./AdScreen/AdScreen";
 import AdScreenList from "./User/AdScreenList";
 import ScreenStatus from "./User/ScreenStatus";
+import AddBankAccount from "./User/AddBankAccount";
 
 
 
@@ -274,6 +275,10 @@ function App() {
        {
       path: "onlinescreens",
       element: <ScreenStatus />
+    },
+         {
+      path: "addbankaccount",
+      element: <AddBankAccount />
     },
     {
       path: "overview",

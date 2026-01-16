@@ -421,9 +421,8 @@ const UserProfileDashboard = () => {
                 {navItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
               </h1>
               <p className="text-gray-500">
-                {userRole === 'screen_owner'
-                  ? 'Manage your screens and earnings'
-                  : 'Manage your campaigns and bookings'}
+              Manage your earnings
+               
               </p>
             </div>
             <div className="flex items-center space-x-4 lg:space-x-6">
